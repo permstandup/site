@@ -58,6 +58,11 @@ const deps: Deps = {
 createServer(async (r, w) => {
   const chunks: Buffer[] = [];
   for await (const c of r) chunks.push(c as Buffer);
+  // Открывать можно и как localhost, и как 127.0.0.1 (полезно при включённом VPN).
+  // Чужие имена хоста отклоняем — защита от подмены DNS (DNS rebinding).
+  const host = r.headers.host ?? '';
+  if (host !== `localhost:${PORT}` && host !== `127.0.0.1:${PORT}`) { w.statusCode = 400; w.end('Bad host'); return; }
+  cfg.origin = `http://${host}`;
   const u = new URL(r.url ?? '/', cfg.origin);
   const headers: Record<string, string> = {};
   for (const [k, v] of Object.entries(r.headers)) if (typeof v === 'string') headers[k] = v;
@@ -82,5 +87,5 @@ createServer(async (r, w) => {
   if (res.cookies) w.setHeader('Set-Cookie', res.cookies);
   w.end(res.body);
 }).listen(PORT, '127.0.0.1', () => {
-  console.log(`Админка (локально): http://localhost:${PORT}  — правки пишутся в файлы проекта`);
+  console.log(`Админка (локально): http://localhost:${PORT}  (или http://127.0.0.1:${PORT})  — правки пишутся в файлы проекта`);
 });
