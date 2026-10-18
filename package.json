@@ -8,7 +8,10 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "check": "astro check"
+    "check": "astro check",
+    "admin:build": "node admin/build.mjs",
+    "admin:dev": "node admin/build.mjs --ui && tsx admin/dev/server.ts",
+    "admin:test": "node --import tsx --test admin/test/*.test.ts"
   },
   "dependencies": {
     "@astrojs/sitemap": "3.7.4",

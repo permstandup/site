@@ -5,3 +5,5 @@ dist/
 .env.*
 .DS_Store
 Thumbs.db
+admin/dist/
+admin/server/assets.generated.ts
