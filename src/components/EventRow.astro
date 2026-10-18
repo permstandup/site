@@ -1,0 +1,78 @@
+---
+import type { EventEntry } from '../lib/events';
+import { FORMAT_LABEL, eventUrl } from '../lib/events';
+import { dateParts, parseLocal } from '../lib/dates';
+
+interface Props { event: EventEntry }
+const { event } = Astro.props;
+const d = event.data;
+const start = parseLocal(d.start);
+const p = dateParts(start);
+const cancelled = d.status === 'cancelled';
+const moved = d.status === 'moved';
+const soldOut = d.seats === 'out';
+const movedFrom = moved && d.movedFrom ? dateParts(parseLocal(d.movedFrom)) : undefined;
+const dow = start.toLocaleDateString('en-US', { weekday: 'short', timeZone: 'Asia/Yekaterinburg' });
+const weekend = ['Fri', 'Sat', 'Sun'].includes(dow);
+const meta = [p.time, FORMAT_LABEL[d.format], d.age, d.priceFrom ? `от ${d.priceFrom.toLocaleString('ru-RU')} ₽` : null]
+  .filter(Boolean).join(' · ');
+---
+<article
+  class:list={['row', { cancelled, moved, soldout: soldOut && !cancelled }]}
+  data-format={d.format}
+  data-weekend={weekend ? '1' : '0'}
+>
+  <div class="date" aria-hidden="true">
+    <div class="day">{p.day}</div>
+    <div class="mon">{p.month} · {p.weekday}</div>
+  </div>
+  <div class="info">
+    <h3 class="title">
+      <a href={eventUrl(event)}>{d.title}</a>
+      {moved && movedFrom && <span class="tag tag-moved">Перенесено с {movedFrom.day} {movedFrom.month}</span>}
+      {cancelled && <span class="tag tag-cancel">Отменено</span>}
+      {!cancelled && d.seats === 'few' && <span class="tag tag-few">Мало мест</span>}
+    </h3>
+    <p class="meta"><span class="visually-hidden">{p.longWithWeekday}, </span>{meta}</p>
+  </div>
+  <div class="action">
+    {cancelled ? (
+      <a class="btn btn-outline" href={eventUrl(event)}>Как вернуть билет</a>
+    ) : soldOut ? (
+      <span class="btn btn-outline" aria-disabled="true">Sold out</span>
+    ) : d.ticketUrl ? (
+      <a class="btn btn-accent-outline" href={d.ticketUrl}>Билеты</a>
+    ) : (
+      <a class="btn btn-accent-outline" href={eventUrl(event)}>Подробнее</a>
+    )}
+  </div>
+</article>
+
+<style>
+  .row {
+    display: grid; grid-template-columns: 120px minmax(0, 1fr) auto; gap: 24px; align-items: center;
+    padding: 22px 0; border-bottom: 1px solid var(--c-line);
+  }
+  .date { font-family: var(--f-display); line-height: 1; }
+  .day { font-size: 44px; font-weight: 600; }
+  .mon { font-size: 15px; color: var(--c-muted); text-transform: uppercase; letter-spacing: .08em; margin-top: 4px; }
+  .title { font-size: 22px; font-weight: 600; font-family: var(--f-body); display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; }
+  .title a { text-decoration: none; }
+  .title a::after { content: ''; position: absolute; inset: 0; }
+  .info { position: relative; }
+  .meta { font-size: 15px; color: var(--c-muted); }
+  .action { position: relative; z-index: 1; }
+  .soldout { opacity: .6; }
+  .cancelled .day { text-decoration: line-through; color: var(--c-muted); }
+  .cancelled .title a { color: #c9d0cf; }
+
+  @media (max-width: 640px) {
+    .row { grid-template-columns: 56px minmax(0, 1fr); gap: 6px 14px; padding: 16px 0; }
+    .day { font-size: 34px; }
+    .mon { font-size: 12px; }
+    .title { font-size: 18px; }
+    .meta { font-size: 14px; }
+    .action { grid-column: 2; }
+    .action .btn { min-height: 40px; padding: 8px 16px; font-size: 15px; }
+  }
+</style>

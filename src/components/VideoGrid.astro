@@ -1,0 +1,53 @@
+---
+import { getCollection } from 'astro:content';
+import { settings } from '../lib/settings';
+const videos = (await getCollection('videos')).sort((a, b) => a.data.order - b.data.order).slice(0, 6);
+const sourceOf = (url: string) =>
+  /youtu\.?be/.test(url) ? 'youtube' : /rutube/.test(url) ? 'Rutube' : 'VK Видео';
+---
+{videos.length > 0 && (
+  <section id="video" class="section">
+    <div class="container">
+      <div class="section-head">
+        <h2 class="display h2">Видео</h2>
+        <a class="link-more" href={settings.links.vk}>Все записи ВКонтакте →</a>
+      </div>
+      <div class="grid">
+        {videos.map((v) => {
+          const src = sourceOf(v.data.url);
+          const yt = src === 'youtube';
+          return (
+            <a class="video" href={v.data.url} target={yt ? '_blank' : undefined} rel={yt ? 'noopener' : undefined}>
+              <div class="ph frame">
+                <span class:list={['play', { ghost: yt }]} aria-hidden="true">
+                  <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5l11 7-11 7z"></path></svg>
+                </span>
+              </div>
+              <div class="t">{v.data.title}</div>
+              <div class="muted s">{v.data.comedian ? `${v.data.comedian} · ` : ''}{yt ? 'ссылка на YouTube ↗' : src}</div>
+            </a>
+          );
+        })}
+      </div>
+    </div>
+  </section>
+)}
+
+<style>
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: 24px; }
+  .video { text-decoration: none; color: var(--c-text); display: flex; flex-direction: column; gap: 8px; }
+  .frame { aspect-ratio: 16 / 9; background: var(--c-surface); }
+  .play {
+    width: 64px; height: 64px; border-radius: 50%; background: var(--c-accent); color: var(--c-on-accent);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .play.ghost { background: transparent; border: 2px solid var(--c-text); color: var(--c-text); }
+  .t { font-weight: 600; }
+  .s { font-size: 14px; }
+  .video:hover .play { background: var(--c-accent-hover); }
+  @media (max-width: 640px) {
+    .grid { display: flex; overflow-x: auto; gap: 12px; scroll-snap-type: x mandatory; padding-bottom: 6px; }
+    .video { flex: none; width: 78%; scroll-snap-align: start; }
+    .play { width: 52px; height: 52px; }
+  }
+</style>

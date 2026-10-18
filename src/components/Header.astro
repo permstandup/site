@@ -1,0 +1,75 @@
+---
+import Logo from './Logo.astro';
+import { navItems, settings, telHref } from '../lib/settings';
+
+interface Props { active?: string }
+const { active } = Astro.props;
+const items = navItems();
+---
+<header class="site-header">
+  <div class="container bar">
+    <Logo />
+    <nav class="nav-desktop" aria-label="Основное меню">
+      {items.map((i) => (
+        <a href={i.href} aria-current={active === i.href ? 'page' : undefined}>{i.label}</a>
+      ))}
+    </nav>
+    <a class="btn btn-primary buy" href="/afisha/">Купить билет</a>
+
+    <details class="nav-mobile">
+      <summary aria-label="Открыть меню">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"></path></svg>
+      </summary>
+      <div class="sheet">
+        <nav aria-label="Основное меню">
+          {items.map((i) => (
+            <a href={i.href} aria-current={active === i.href ? 'page' : undefined}>{i.label}</a>
+          ))}
+        </nav>
+        <div class="sheet-foot">
+          <a class="btn btn-primary btn-lg btn-block" href="/afisha/">Купить билет</a>
+          <div class="row">
+            <a class="btn btn-outline" href={settings.links.telegram}>Telegram</a>
+            <a class="btn btn-outline" href={settings.links.vk}>ВКонтакте</a>
+          </div>
+          <p class="muted small">{settings.address} · <a class="muted" href={telHref}>{settings.phone}</a></p>
+        </div>
+      </div>
+    </details>
+  </div>
+</header>
+
+<style>
+  .site-header { border-bottom: 1px solid rgba(244, 241, 234, .1); position: relative; z-index: 20; }
+  .bar { display: flex; align-items: center; justify-content: space-between; gap: 24px; padding-block: 16px; }
+  .nav-desktop { display: flex; gap: 28px; font-size: 16px; }
+  .nav-desktop a { text-decoration: none; }
+  .nav-desktop a[aria-current='page'] { color: var(--c-accent-hover); }
+  .nav-mobile { display: none; }
+
+  @media (max-width: 960px) {
+    .nav-desktop, .buy { display: none; }
+    .nav-mobile { display: block; }
+    .nav-mobile summary {
+      list-style: none; width: 44px; height: 44px; border-radius: 12px; border: 1px solid rgba(244, 241, 234, .3);
+      display: flex; align-items: center; justify-content: center; cursor: pointer;
+    }
+    .nav-mobile summary::-webkit-details-marker { display: none; }
+    .nav-mobile[open] summary { position: relative; z-index: 31; background: var(--c-surface); }
+    .sheet {
+      position: fixed; inset: 0; z-index: 30; overflow-y: auto;
+      background: radial-gradient(ellipse 320px 300px at 100% 100%, var(--c-glow), transparent 70%), var(--c-bg);
+      padding: 88px var(--gutter) 28px; display: flex; flex-direction: column; gap: 24px;
+    }
+    .sheet nav { display: flex; flex-direction: column; }
+    .sheet nav a {
+      font-family: var(--f-display); font-size: 40px; font-weight: 600; text-transform: uppercase;
+      text-decoration: none; padding: 6px 0;
+    }
+    .sheet nav a[aria-current='page'] { color: var(--c-accent-hover); }
+    .sheet-foot { margin-top: auto; display: flex; flex-direction: column; gap: 14px; }
+    .row { display: flex; gap: 10px; }
+    .row .btn { flex: 1; }
+    .small { font-size: 14px; text-align: center; }
+  }
+</style>

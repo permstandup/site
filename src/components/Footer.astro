@@ -1,0 +1,38 @@
+---
+import { settings, telHref } from '../lib/settings';
+---
+<footer class="site-footer" id="contacts">
+  <div class="container grid">
+    <div>
+      <div class="display name">{settings.name}</div>
+      <div class="muted">{settings.city}, {settings.address}</div>
+    </div>
+    <div>
+      <div class="muted label">Связь</div>
+      <div><a href={telHref}>{settings.phone}</a></div>
+      <div><a href={settings.links.telegram}>Telegram-канал</a></div>
+      <div><a href={settings.links.vk}>Группа ВКонтакте</a></div>
+    </div>
+    <div>
+      <div class="muted label">Билеты</div>
+      <div><a href={settings.links.qtickets}>Qtickets</a></div>
+      <div><a href={settings.links.yandexAfisha}>Яндекс Афиша</a></div>
+    </div>
+    <div class="muted legal">
+      <span class="age">18+</span>
+      <div><a class="muted" href="/privacy/">Политика конфиденциальности</a></div>
+    </div>
+  </div>
+</footer>
+
+<style>
+  .site-footer { background: var(--c-footer); border-top: 1px solid rgba(244, 241, 234, .1); }
+  .grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+    gap: 28px; padding-block: 48px 56px; font-size: 16px;
+  }
+  .name { font-size: 24px; font-weight: 600; line-height: 1.1; margin-bottom: 8px; }
+  .label { margin-bottom: 6px; }
+  .legal { font-size: 14px; }
+  .age { display: inline-block; border: 1px solid currentColor; border-radius: 6px; padding: 1px 8px; font-weight: 600; margin-bottom: 10px; }
+</style>

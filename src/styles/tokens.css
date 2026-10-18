@@ -1,0 +1,35 @@
+/* Дизайн-система клуба: цвета, шрифты, отступы — в одном месте.
+   Смена фирменного цвета = одна правка здесь. */
+:root {
+  --c-bg: #0e1a1c;
+  --c-surface: #15252a;
+  --c-surface-2: #1e3439;
+  --c-tile: #1a2d31;
+  --c-footer: #0a1416;
+  --c-text: #f4f1ea;
+  --c-text-2: #d5dad8;
+  --c-muted: #a9b4b3;
+  --c-line: rgba(244, 241, 234, 0.14);
+  --c-line-strong: rgba(244, 241, 234, 0.4);
+
+  --c-accent: #a97bff;
+  --c-accent-hover: #c3a0ff;
+  --c-on-accent: #160c2a;
+  --c-glow: rgba(150, 95, 255, 0.24);
+
+  --c-moved: #ffc56b;
+  --c-on-moved: #2a1a00;
+  --c-cancel: #b23a3a;
+
+  --f-display: 'Oswald', 'Arial Narrow', sans-serif;
+  --f-body: 'Golos Text', system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  --r-s: 10px;
+  --r-m: 16px;
+  --r-l: 20px;
+  --r-pill: 999px;
+
+  --w-max: 1240px;
+  --gutter: clamp(16px, 4vw, 40px);
+  --section-y: clamp(40px, 6vw, 72px);
+}

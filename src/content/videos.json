@@ -1,0 +1,5 @@
+[
+  { "id": "video-1", "title": "[Название ролика]", "url": "https://vk.ru/standupperm", "comedian": "[Комик]", "order": 1 },
+  { "id": "video-2", "title": "[Название ролика]", "url": "https://vk.ru/standupperm", "comedian": "[Комик]", "order": 2 },
+  { "id": "video-3", "title": "[Название ролика]", "url": "https://vk.ru/standupperm", "comedian": "[Комик]", "order": 3 }
+]

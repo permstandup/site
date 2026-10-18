@@ -1,0 +1,21 @@
+---
+import Base from '../layouts/Base.astro';
+---
+<Base title="Страница не найдена" noindex>
+  <section class="container nf">
+    <div class="display code">404</div>
+    <h1 class="display h2">Шутка не зашла</h1>
+    <p class="lead">Такой страницы нет — возможно, шоу уже прошло или ссылка устарела. Зато в афише есть свежие.</p>
+    <div class="actions">
+      <a class="btn btn-primary btn-lg" href="/afisha/">Открыть афишу</a>
+      <a class="btn btn-outline btn-lg" href="/">На главную</a>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .nf { padding-block: 72px 104px; display: flex; flex-direction: column; gap: 20px; align-items: flex-start; }
+  .code { font-size: clamp(120px, 18vw, 200px); line-height: .85; color: var(--c-accent); }
+  .lead { max-width: 560px; }
+  .actions { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 8px; }
+</style>
