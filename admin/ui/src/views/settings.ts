@@ -187,6 +187,8 @@ export function settingsView(app: App, logout: () => void) {
     card('SEO — как сайт выглядит в Яндексе',
       field('Код подтверждения Яндекс Вебмастера', textInput(str(() => s.seo.yandexVerification, (v) => { s.seo.yandexVerification = v.trim(); }), { max: 16, placeholder: 'например 1a2b3c4d5e6f7a8b' }),
         { hint: 'Из meta-тега yandex-verification в Вебмастере — только сам код из 16 символов.' }),
+      field('Номер счётчика Яндекс Метрики', textInput(str(() => s.seo.metrikaId, (v) => { s.seo.metrikaId = v.trim(); }), { max: 12, placeholder: 'например 98765432' }),
+        { hint: 'Только цифры. Пусто — Метрика выключена. Вебвизор (запись действий посетителей) не используется.' }),
       seoBox),
     historyCard('src/content/settings.json', async () => { await app.reload(); app.go('#/settings'); }));
 }

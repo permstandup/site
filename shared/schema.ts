@@ -164,6 +164,8 @@ export const bannerSchema = z.object({
 export const seoSchema = z.object({
   /** Код подтверждения Яндекс Вебмастера (из meta-тега yandex-verification) */
   yandexVerification: z.union([z.literal(''), z.string().regex(/^[0-9a-f]{16}$/, '16 символов: цифры и буквы a–f')]).default(''),
+  /** Номер счётчика Яндекс Метрики (только цифры). Пусто — Метрика выключена. */
+  metrikaId: z.union([z.literal(''), z.string().regex(/^\d{5,12}$/, 'Номер счётчика — только цифры')]).default(''),
   pages: z.object({
     home: seoPage.default({ title: '', description: '' }),
     afisha: seoPage.default({ title: '', description: '' }),
@@ -205,7 +207,7 @@ export const settingsSchema = z.object({
   theme: z.enum(THEMES).default('violet'),
   home: homeSchema.default({ featured: '', featuredLabel: 'Главное шоу недели', featuredText: '', blocks: DEFAULT_HOME_BLOCKS }),
   banner: bannerSchema.default({ enabled: false, text: '', link: '', linkLabel: '', until: '', tone: 'accent' }),
-  seo: seoSchema.default({ yandexVerification: '', pages: { home: { title: '', description: '' }, afisha: { title: '', description: '' }, comics: { title: '', description: '' }, openmic: { title: '', description: '' }, contacts: { title: '', description: '' } } }),
+  seo: seoSchema.default({ yandexVerification: '', metrikaId: '', pages: { home: { title: '', description: '' }, afisha: { title: '', description: '' }, comics: { title: '', description: '' }, openmic: { title: '', description: '' }, contacts: { title: '', description: '' } } }),
 }).strict();
 
 export type EventData = z.infer<typeof eventSchema>;

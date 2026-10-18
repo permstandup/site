@@ -1,0 +1,65 @@
+# Сборка сайта и выкладка в Yandex Object Storage.
+# Запускается: при каждом изменении (в т.ч. из админки), каждую ночь в 00:05 по Перми
+# (чтобы прошедшие шоу уходили из афиши) и вручную (Actions → Run workflow).
+name: Публикация сайта
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - 'admin/**'
+      - '**/*.md'
+      - 'admin-state.json'
+  schedule:
+    - cron: '5 19 * * *' # 19:05 UTC = 00:05 по Перми
+  workflow_dispatch:
+
+# Сборке нужен только доступ на чтение репозитория
+permissions:
+  contents: read
+
+# Одна публикация за раз; новая встаёт в очередь
+concurrency:
+  group: deploy-site
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    environment: production
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22
+          cache: npm
+
+      # --ignore-scripts: пакеты не могут выполнить свой код при установке
+      - name: Установка зависимостей
+        run: npm ci --ignore-scripts
+
+      - name: Проверки (схемы данных и защита админки)
+        run: npm run admin:test
+
+      - name: Сборка сайта
+        run: npm run build
+
+      - name: Выкладка в Object Storage
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.YC_S3_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.YC_S3_SECRET }}
+          AWS_DEFAULT_REGION: ru-central1
+        run: |
+          set -euo pipefail
+          BUCKET=permstandup.ru
+          E=--endpoint-url=https://storage.yandexcloud.net
+          # Сначала файлы с хэшем в имени (кешируются надолго), потом страницы
+          aws s3 sync dist/_astro "s3://$BUCKET/_astro" $E --no-progress \
+            --cache-control "public, max-age=31536000, immutable"
+          aws s3 sync dist "s3://$BUCKET" $E --no-progress --delete \
+            --exclude "_astro/*" --cache-control "public, max-age=300"
+          echo "Опубликовано: https://$BUCKET/" >> "$GITHUB_STEP_SUMMARY"

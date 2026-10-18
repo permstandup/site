@@ -1,0 +1,23 @@
+---
+/** Яндекс Метрика. Номер счётчика задаётся в админке (Настройки → SEO). Вебвизор выключен: записи действий посетителей не ведутся. */
+import { settings } from '../lib/settings';
+const id = settings.seo.metrikaId;
+---
+{id && <div id="ym-counter" data-id={id} hidden></div>}
+{id && <noscript><div><img src={`https://mc.yandex.ru/watch/${id}`} width="1" height="1" alt="" /></div></noscript>}
+
+<script>
+  const el = document.getElementById('ym-counter');
+  const id = Number(el?.dataset.id);
+  if (id) {
+    type Ym = ((...args: unknown[]) => void) & { a?: unknown[]; l?: number };
+    const w = window as unknown as { ym?: Ym };
+    w.ym = w.ym || (Object.assign((...args: unknown[]) => { (w.ym!.a = w.ym!.a || []).push(args); }, {}) as Ym);
+    w.ym.l = Date.now();
+    const s = document.createElement('script');
+    s.async = true;
+    s.src = 'https://mc.yandex.ru/metrika/tag.js';
+    document.head.appendChild(s);
+    w.ym(id, 'init', { clickmap: true, trackLinks: true, accurateTrackBounce: true, webvisor: false });
+  }
+</script>

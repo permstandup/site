@@ -18,7 +18,7 @@ interface YcEvent {
   queryStringParameters?: Record<string, string>;
   body?: string;
   isBase64Encoded?: boolean;
-  requestContext?: { identity?: { sourceIp?: string } };
+  requestContext?: { identity?: { sourceIp?: string }; http?: { sourceIp?: string } };
 }
 
 let deps: Deps | null = null;
@@ -50,7 +50,7 @@ export async function handler(event: YcEvent) {
     query,
     headers,
     body: event.body ? Buffer.from(event.body, event.isBase64Encoded ? 'base64' : 'utf8') : Buffer.alloc(0),
-    ip: event.requestContext?.identity?.sourceIp ?? headers['x-forwarded-for']?.split(',')[0]?.trim() ?? 'unknown',
+    ip: event.requestContext?.identity?.sourceIp ?? event.requestContext?.http?.sourceIp ?? headers['x-forwarded-for']?.split(',')[0]?.trim() ?? 'unknown',
   };
   const res = await handle(req, d);
   const isBinary = Buffer.isBuffer(res.body) && !/^(text\/|application\/json|application\/javascript)/.test(res.headers['Content-Type'] ?? '');

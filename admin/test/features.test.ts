@@ -115,6 +115,7 @@ test('настройки: тема только из списка, плашка 
   assert.equal((await putSettings((s) => { s.banner = { ...s.banner, enabled: true, text: '' }; })).status, 422);
   assert.equal((await putSettings((s) => { s.seo.yandexVerification = '"><script>'; })).status, 422);
   assert.equal((await putSettings((s) => { s.home.featured = '../x'; })).status, 422);
+  assert.equal((await putSettings((s) => { s.seo.metrikaId = '123"><script>'; })).status, 422);
   assert.equal((await putSettings((s) => { s.home.blocks = [{ id: 'afisha', title: '' }, { id: 'afisha', title: '' }]; })).status, 422);
   assert.equal((await putSettings((s) => { s.home.blocks = [{ id: 'script', title: '' }]; })).status, 422);
 });
@@ -124,6 +125,7 @@ test('настройки: нормальные значения сохраняю
     s.theme = 'mint';
     s.banner = { enabled: true, text: '31 декабря — новогодний стендап', link: '/afisha/', linkLabel: 'Билеты', until: '2026-12-31', tone: 'accent' };
     s.seo.yandexVerification = '0123456789abcdef';
+    s.seo.metrikaId = '98765432';
     s.home.featured = '2026-10-24-standup-1830';
     s.home.blocks = [{ id: 'photos', title: 'Атмосфера' }, { id: 'afisha', title: '' }];
   });

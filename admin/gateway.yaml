@@ -1,0 +1,27 @@
+# Спецификация API Gateway для admin.permstandup.ru.
+# Подставьте ID функции и сервисного аккаунта (с ролью functions.functionInvoker на эту функцию).
+openapi: 3.0.0
+info:
+  title: permstandup-admin
+  version: 1.0.0
+paths:
+  /:
+    x-yc-apigateway-any-method:
+      x-yc-apigateway-integration:
+        type: cloud_functions
+        function_id: <ID_ФУНКЦИИ>
+        tag: $latest
+        service_account_id: <ID_СЕРВИСНОГО_АККАУНТА>
+  /{path+}:
+    x-yc-apigateway-any-method:
+      parameters:
+        - name: path
+          in: path
+          required: false
+          schema:
+            type: string
+      x-yc-apigateway-integration:
+        type: cloud_functions
+        function_id: <ID_ФУНКЦИИ>
+        tag: $latest
+        service_account_id: <ID_СЕРВИСНОГО_АККАУНТА>
