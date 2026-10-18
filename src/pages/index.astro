@@ -45,7 +45,7 @@ const jsonLd = {
 ---
 <Base jsonLd={jsonLd} seo={seoFor('home')}>
   <section class="hero">
-    <div class="container hero-grid">
+    <div class:list={['container', 'hero-grid', { 'has-featured': featured }]}>
       <div>
         <p class="kicker muted">{settings.city} · {settings.address} · 18+</p>
         <h1 class="display title">
@@ -63,6 +63,7 @@ const jsonLd = {
               {next.data.cover ? <img src={next.data.cover} alt={`Афиша шоу «${next.data.title}»`} /> : <span class="poster-empty"><img src="/logo.svg" alt="" />Обложка появится позже</span>}
             </a>
           )}
+          <div class="next-body">
           <div class="eyebrow">{featured ? (home.featuredLabel || 'Главное шоу недели') : 'Ближайшее шоу'}</div>
           <a class="display next-title" href={eventUrl(next)}>{next.data.title}</a>
           {featured && home.featuredText && <p class="next-text">{home.featuredText}</p>}
@@ -81,6 +82,7 @@ const jsonLd = {
                 <a class="btn btn-outline btn-lg" href={eventUrl(next)}>Подробнее</a>
               </>
             )}
+          </div>
           </div>
         </div>
       ) : (
@@ -182,6 +184,19 @@ const jsonLd = {
   }
   .next.featured .eyebrow { align-self: flex-start; background: var(--c-accent); color: var(--c-on-accent); border-radius: var(--r-pill); padding: 4px 12px; letter-spacing: .08em; }
   .next-poster { border-radius: var(--r-m); background-color: var(--c-bg); }
+  .next-body { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+  /* Главное шоу: обложка слева, текст справа — карточка не вытягивается в высоту */
+  .hero-grid.has-featured { grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); padding-block: clamp(36px, 5vw, 64px); }
+  .next.featured { display: grid; grid-template-columns: minmax(180px, 0.9fr) minmax(0, 1.1fr); gap: 24px; align-items: center; }
+  .next.featured .next-title { font-size: clamp(28px, 2.6vw, 38px); }
+  .next.featured .next-actions { grid-template-columns: 1fr; }
+  @media (max-width: 960px) {
+    .hero-grid.has-featured { grid-template-columns: minmax(0, 1fr); }
+  }
+  @media (max-width: 560px) {
+    .next.featured { grid-template-columns: minmax(0, 1fr); }
+    .next.featured .next-poster { max-width: 360px; width: 100%; justify-self: center; }
+  }
   .next-text { color: var(--c-text-2); }
   .next-actions { display: grid; grid-template-columns: 1fr auto; gap: 10px; }
   .next-actions > :only-child { grid-column: 1 / -1; }
