@@ -1,6 +1,7 @@
 ---
 name: Николай Будрин
 role: resident
+tagline: "[короткое био в одну строку]"
 order: 2
 visible: true
 ---

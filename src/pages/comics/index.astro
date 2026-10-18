@@ -1,0 +1,64 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import ComicCard from '../../components/ComicCard.astro';
+import { settings, isOn } from '../../lib/settings';
+
+const all = (await getCollection('comedians', ({ data }) => data.visible)).sort((a, b) => a.data.order - b.data.order);
+const residents = all.filter((c) => c.data.role === 'resident');
+const guests = all.filter((c) => c.data.role === 'guest');
+---
+<Base title="Комики" description={settings.comicsLead} activeNav="/comics/" noindex={!isOn('comics')}>
+  <section class="container head">
+    <h1 class="display h1">Комики</h1>
+    <p class="lead">{settings.comicsLead}</p>
+  </section>
+
+  {residents.length > 0 && (
+    <section class="container group">
+      <h2 class="eyebrow">Резиденты</h2>
+      <div class="grid-l">{residents.map((c) => <ComicCard comic={c} />)}</div>
+    </section>
+  )}
+
+  {guests.length > 0 && (
+    <section class="container group">
+      <h2 class="eyebrow">Гости клуба</h2>
+      <div class="grid-s">{guests.map((c) => <ComicCard comic={c} size="s" />)}</div>
+    </section>
+  )}
+
+  {all.length === 0 && (
+    <section class="container group"><p class="muted">Скоро здесь появятся комики клуба.</p></section>
+  )}
+
+  {isOn('openmic') && (
+    <section class="container group last">
+      <div class="card cta">
+        <div>
+          <div class="display h3">Хочешь на сцену?</div>
+          <div class="muted">Начни с открытого микрофона — {settings.openMic.schedule}.</div>
+        </div>
+        <a class="btn btn-primary btn-lg" href="/open-mic/">Как попасть на open mic</a>
+      </div>
+    </section>
+  )}
+</Base>
+
+<style>
+  .head { padding-block: clamp(40px, 6vw, 56px) 24px; display: flex; flex-direction: column; gap: 12px; }
+  .head .lead { max-width: 640px; }
+  .group { padding-block: 24px 40px; }
+  .group h2 { margin-bottom: 20px; }
+  .grid-l { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr)); gap: 24px; }
+  .grid-s { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 200px), 1fr)); gap: 20px; }
+  .last { padding-bottom: 96px; }
+  .cta {
+    padding: clamp(24px, 4vw, 40px); display: flex; justify-content: space-between; align-items: center; gap: 24px; flex-wrap: wrap;
+    background: radial-gradient(ellipse 50% 120% at 90% 0%, rgba(150, 95, 255, .28), transparent 70%), var(--c-surface);
+  }
+  @media (max-width: 760px) {
+    .grid-l, .grid-s { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+    .grid-l :global(.name) { font-size: 20px; }
+  }
+</style>

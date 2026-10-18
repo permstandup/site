@@ -1,0 +1,36 @@
+---
+/** Карта клуба (Яндекс) + адрес и кнопки «Маршрут» / телефон. Используется на странице шоу и в контактах. */
+import { settings, telHref } from '../lib/settings';
+interface Props { title?: string; tall?: boolean }
+const { title = 'Стендап-клуб', tall = false } = Astro.props;
+const q = encodeURIComponent(`${settings.city}, ${settings.address}`);
+---
+<div class:list={['map-wrap', { tall }]}>
+  <iframe
+    class="map"
+    title={`Карта: ${settings.address}`}
+    src={`https://yandex.ru/map-widget/v1/?text=${q}&z=16`}
+    loading="lazy"
+  ></iframe>
+  <div class="addr">
+    <slot>
+      <div class="display addr-t">{title}</div>
+      <div>{settings.city}, {settings.address}</div>
+      {settings.howToGet && <div class="muted">{settings.howToGet}</div>}
+      <div class="addr-a">
+        <a class="btn btn-outline" href={`https://yandex.ru/maps/?text=${q}`}>Построить маршрут</a>
+        <a class="btn btn-outline" href={telHref}>{settings.phone}</a>
+      </div>
+    </slot>
+  </div>
+</div>
+
+<style>
+  .map-wrap { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 380px), 1fr)); gap: 24px; }
+  .map { width: 100%; min-height: 320px; height: 100%; border: 0; border-radius: var(--r-l); background: var(--c-surface); }
+  .tall .map { min-height: 400px; }
+  .addr { display: flex; flex-direction: column; gap: 10px; justify-content: center; }
+  .addr-t { font-size: 30px; font-weight: 600; }
+  .addr-a { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 8px; }
+  @media (max-width: 640px) { .map, .tall .map { min-height: 280px; height: 280px; } }
+</style>

@@ -3,9 +3,10 @@ import { render } from 'astro:content';
 import Base from '../../layouts/Base.astro';
 import ComicCard from '../../components/ComicCard.astro';
 import NextShowBar from '../../components/NextShowBar.astro';
+import MapBlock from '../../components/MapBlock.astro';
 import { getUpcomingEvents, getEventComedians, eventUrl, FORMAT_LABEL, type EventEntry } from '../../lib/events';
 import { dateParts, parseLocal } from '../../lib/dates';
-import { settings, telHref, isOn } from '../../lib/settings';
+import { settings, isOn } from '../../lib/settings';
 
 export async function getStaticPaths() {
   const upcoming = await getUpcomingEvents();
@@ -26,7 +27,6 @@ const comics = isOn('comics') ? await getEventComedians(event) : [];
 const others = upcoming.filter((e) => e.id !== event.id && e.data.status !== 'cancelled').slice(0, 3);
 const { Content } = await render(event);
 const price = d.priceFrom ? `от ${d.priceFrom.toLocaleString('ru-RU')} ₽` : undefined;
-const mapQuery = encodeURIComponent(`${settings.city}, ${settings.address}`);
 
 const jsonLd = {
   '@context': 'https://schema.org',
@@ -52,7 +52,7 @@ const jsonLd = {
 };
 const desc = d.seoDescription ?? `${d.title} — ${p.longWithWeekday}, ${p.time}. ${FORMAT_LABEL[d.format]} в Пермском стендап клубе${price ? `, билеты ${price}` : ''}.`;
 ---
-<Base title={`${d.title}, ${p.long}`} description={desc} activeNav="/afisha/" jsonLd={jsonLd}>
+<Base title={`${d.title}, ${p.long}`} description={desc} ogImage={`/og/shows/${event.id}.png`} activeNav="/afisha/" jsonLd={jsonLd}>
   <div class="container crumbs muted"><a class="muted" href="/afisha/">Афиша</a> / {d.title}</div>
 
   {(cancelled || moved) && (
@@ -135,23 +135,7 @@ const desc = d.seoDescription ?? `${d.title} — ${p.longWithWeekday}, ${p.time}
 
   <section class="container block">
     <h2 class="display h3">Как добраться</h2>
-    <div class="map-wrap">
-      <iframe
-        class="map"
-        title={`Карта: ${settings.address}`}
-        src={`https://yandex.ru/map-widget/v1/?text=${mapQuery}&z=16`}
-        loading="lazy"
-      ></iframe>
-      <div class="addr">
-        <div class="display addr-t">Стендап-клуб</div>
-        <div>{settings.city}, {settings.address}</div>
-        {settings.howToGet && <div class="muted">{settings.howToGet}</div>}
-        <div class="addr-a">
-          <a class="btn btn-outline" href={`https://yandex.ru/maps/?text=${mapQuery}`}>Построить маршрут</a>
-          <a class="btn btn-outline" href={telHref}>{settings.phone}</a>
-        </div>
-      </div>
-    </div>
+    <MapBlock />
   </section>
 
   {others.length > 0 && (
@@ -225,12 +209,6 @@ const desc = d.seoDescription ?? `${d.title} — ${p.longWithWeekday}, ${p.time}
 
   .block { padding-block: 24px 56px; }
   .comics { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 200px), 1fr)); gap: 20px; }
-
-  .map-wrap { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 360px), 1fr)); gap: 24px; }
-  .map { width: 100%; min-height: 320px; border: 0; border-radius: var(--r-l); background: var(--c-surface); }
-  .addr { display: flex; flex-direction: column; gap: 10px; justify-content: center; }
-  .addr-t { font-size: 30px; font-weight: 600; }
-  .addr-a { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 8px; }
 
   .last { padding-bottom: 96px; }
   .others { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); gap: 20px; }

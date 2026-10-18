@@ -1,0 +1,90 @@
+---
+import Base from '../layouts/Base.astro';
+import MapBlock from '../components/MapBlock.astro';
+import { settings, telHref } from '../lib/settings';
+
+const q = encodeURIComponent(`${settings.city}, ${settings.address}`);
+const facts = settings.facts.slice(0, 4);
+---
+<Base
+  title="О клубе и контакты"
+  description={`${settings.name}: ${settings.city}, ${settings.address}. Телефон ${settings.phone}, Telegram и ВКонтакте, где купить билеты.`}
+  activeNav="/contacts/"
+>
+  <section class="container about">
+    <div>
+      <h1 class="display h1">О клубе</h1>
+      <div class="lead text">{settings.about.paragraphs.map((p) => <p>{p}</p>)}</div>
+    </div>
+    {facts.length > 0 && (
+      <div class="facts">
+        {facts.map((f) => (
+          <div class="card fact">
+            <div class="display ft">{f.title}</div>
+            <div class="muted">{f.text}</div>
+          </div>
+        ))}
+      </div>
+    )}
+  </section>
+
+  <section class="container contacts" id="contacts">
+    <h2 class="display h2">Контакты</h2>
+    <MapBlock tall>
+      <div class="items">
+        <div>
+          <div class="muted lbl">Адрес</div>
+          <div class="big">{settings.city}, {settings.address}</div>
+          {settings.howToGet && <div class="muted">{settings.howToGet}</div>}
+          <a class="route" href={`https://yandex.ru/maps/?text=${q}`}>Построить маршрут →</a>
+        </div>
+        <div>
+          <div class="muted lbl">Телефон</div>
+          <a class="big" href={telHref}>{settings.phone}</a>
+        </div>
+        <div>
+          <div class="muted lbl">Мы в соцсетях</div>
+          <div class="btns">
+            <a class="btn btn-outline" href={settings.links.telegram}>Telegram-канал</a>
+            <a class="btn btn-outline" href={settings.links.vk}>ВКонтакте</a>
+          </div>
+        </div>
+        <div>
+          <div class="muted lbl">Билеты</div>
+          <div class="btns">
+            <a class="btn btn-primary" href={settings.links.qtickets}>Qtickets</a>
+            <a class="btn btn-outline" href={settings.links.yandexAfisha}>Яндекс Афиша</a>
+          </div>
+        </div>
+        <div class="muted legal">
+          {settings.about.requisites && <>{settings.about.requisites} · </>}
+          <a class="muted" href="/privacy/">Политика конфиденциальности</a>
+        </div>
+      </div>
+    </MapBlock>
+  </section>
+</Base>
+
+<style>
+  .about {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 440px), 1fr));
+    gap: 48px; align-items: start; padding-block: clamp(40px, 6vw, 56px) 40px;
+  }
+  .about h1 { margin-bottom: 20px; }
+  .text p + p { margin-top: 16px; }
+  .facts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+  .fact { padding: 22px; }
+  .ft { font-size: 26px; font-weight: 600; }
+  .contacts { padding-block: 40px 96px; }
+  .contacts h2 { margin-bottom: 24px; }
+  .items { display: flex; flex-direction: column; gap: 22px; }
+  .lbl { font-size: 14px; margin-bottom: 4px; }
+  .big { font-size: 22px; font-weight: 600; text-decoration: none; }
+  .route { display: inline-flex; min-height: 44px; align-items: center; font-weight: 600; }
+  .btns { display: flex; gap: 10px; flex-wrap: wrap; }
+  .legal { font-size: 14px; border-top: 1px solid var(--c-line); padding-top: 16px; }
+  @media (max-width: 640px) {
+    .fact { padding: 16px; font-size: 14px; }
+    .ft { font-size: 20px; }
+  }
+</style>

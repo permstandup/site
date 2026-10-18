@@ -1,0 +1,125 @@
+---
+import Base from '../layouts/Base.astro';
+import EventRow from '../components/EventRow.astro';
+import { getUpcomingEvents } from '../lib/events';
+import { settings, isOn, openMicContact } from '../lib/settings';
+
+const om = settings.openMic;
+const mics = (await getUpcomingEvents()).filter((e) => e.data.format === 'openmic').slice(0, 4);
+const hostIsTelegram = /t\.me\//.test(openMicContact);
+const hostLine = [om.hostName && `Ведущий: ${om.hostName}`, om.replyTime && `обычно отвечает ${om.replyTime}`].filter(Boolean).join(' · ');
+
+const faqLd = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: om.faq.filter((f) => !f.a.startsWith('[')).map((f) => ({
+    '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a },
+  })),
+};
+---
+<Base
+  title="Open mic — как выступить"
+  description={`Открытый микрофон в Пермском стендап клубе ${om.schedule}. Как записаться, правила и частые вопросы.`}
+  activeNav="/open-mic/"
+  jsonLd={faqLd.mainEntity.length ? faqLd : undefined}
+  noindex={!isOn('openmic')}
+>
+  <section class="hero">
+    <div class="container hero-grid">
+      <div>
+        <div class="eyebrow">Открытый микрофон · {om.schedule}</div>
+        <h1 class="display title">Хочешь<br />на сцену?</h1>
+        <p class="lead">Открытый микрофон — место, где новые комики проверяют материал перед живым залом. Запись — через ведущего{hostIsTelegram ? ' в Telegram' : ''}.</p>
+      </div>
+      <div class="card signup">
+        <div class="display su-t">Записаться</div>
+        <p>Напиши ведущему: как тебя зовут, есть ли опыт и в какой день хочешь выступить.</p>
+        <a class="btn btn-primary btn-lg btn-block" href={openMicContact}>Написать ведущему{hostIsTelegram ? ' в Telegram' : ''}</a>
+        {hostLine && <div class="muted small">{hostLine}</div>}
+      </div>
+    </div>
+  </section>
+
+  <section class="container block">
+    <h2 class="display h2">Как это работает</h2>
+    <ol class="steps">
+      {om.steps.map((s, i) => (
+        <li class="card step">
+          <div class="display num">{String(i + 1).padStart(2, '0')}</div>
+          <div class="st">{s.title}</div>
+          <div class="muted">{s.text}{i === om.steps.length - 1 ? ` · ${settings.address}` : ''}</div>
+        </li>
+      ))}
+    </ol>
+  </section>
+
+  <section class="container block two">
+    <div>
+      <h2 class="display h3">Правила</h2>
+      <ul class="rules">{om.rules.map((r) => <li>{r}</li>)}</ul>
+    </div>
+    <div>
+      <h2 class="display h3">Частые вопросы</h2>
+      <div class="faq">
+        {om.faq.map((f, i) => (
+          <details class="card" open={i === 0}>
+            <summary>{f.q}</summary>
+            <p>{f.a}</p>
+          </details>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  {mics.length > 0 && (
+    <section class="container block">
+      <h2 class="display h3">Ближайшие open mic</h2>
+      <div class="rows">{mics.map((e) => <EventRow event={e} />)}</div>
+    </section>
+  )}
+
+  <section class="container block last">
+    <div class="card watch">
+      <div>
+        <div class="display wt">Хочешь просто посмотреть?</div>
+        <div class="muted">Открытые микрофоны есть в афише — на них можно прийти зрителем.</div>
+      </div>
+      <a class="btn btn-outline btn-lg" href="/afisha/">Открыть афишу</a>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .hero { background: radial-gradient(ellipse 600px 460px at 85% 0%, rgba(150, 95, 255, .26), transparent 70%); }
+  .hero-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 440px), 1fr));
+    gap: 48px; align-items: end; padding-block: clamp(48px, 7vw, 72px) clamp(40px, 6vw, 64px);
+  }
+  .eyebrow { margin-bottom: 16px; }
+  .title { font-size: clamp(60px, 8vw, 104px); line-height: .92; }
+  .hero .lead { margin-top: 24px; max-width: 520px; }
+  .signup { padding: clamp(22px, 3vw, 32px); display: flex; flex-direction: column; gap: 16px; }
+  .signup p { color: var(--c-text-2); }
+  .su-t { font-size: 28px; font-weight: 600; }
+  .small { font-size: 14px; }
+
+  .block { padding-block: 24px 56px; }
+  .block h2 { margin-bottom: 20px; }
+  .steps { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr)); gap: 16px; }
+  .step { padding: 28px; display: flex; flex-direction: column; gap: 10px; }
+  .num { font-size: 48px; color: var(--c-accent); line-height: 1; }
+  .st { font-size: 20px; font-weight: 600; }
+
+  .two { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 440px), 1fr)); gap: 48px; }
+  .rules { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--c-line); }
+  .rules li { padding: 14px 0; border-bottom: 1px solid var(--c-line); }
+  .faq { display: flex; flex-direction: column; gap: 10px; }
+  .faq details { padding: 18px 20px; border-radius: 14px; }
+  .faq summary { font-weight: 600; cursor: pointer; min-height: 24px; }
+  .faq p { margin-top: 10px; color: var(--c-text-2); }
+  .rows { border-top: 1px solid var(--c-line); }
+
+  .last { padding-bottom: 96px; }
+  .watch { padding: clamp(24px, 3vw, 32px) clamp(24px, 4vw, 40px); display: flex; justify-content: space-between; align-items: center; gap: 24px; flex-wrap: wrap; }
+  .wt { font-size: clamp(24px, 2.6vw, 30px); margin-bottom: 4px; }
+</style>

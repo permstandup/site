@@ -1,7 +1,12 @@
 ---
 import { getCollection } from 'astro:content';
 import { settings } from '../lib/settings';
-const videos = (await getCollection('videos')).sort((a, b) => a.data.order - b.data.order).slice(0, 6);
+
+type Item = { title: string; url: string; comedian?: string };
+interface Props { items?: Item[]; title?: string; more?: boolean }
+const { items, title = 'Видео', more = true } = Astro.props;
+const videos: Item[] = items ?? (await getCollection('videos'))
+  .sort((a, b) => a.data.order - b.data.order).slice(0, 6).map((v) => v.data);
 const sourceOf = (url: string) =>
   /youtu\.?be/.test(url) ? 'youtube' : /rutube/.test(url) ? 'Rutube' : 'VK Видео';
 ---
@@ -9,22 +14,22 @@ const sourceOf = (url: string) =>
   <section id="video" class="section">
     <div class="container">
       <div class="section-head">
-        <h2 class="display h2">Видео</h2>
-        <a class="link-more" href={settings.links.vk}>Все записи ВКонтакте →</a>
+        <h2 class="display h2">{title}</h2>
+        {more && <a class="link-more" href={settings.links.vk}>Все записи ВКонтакте →</a>}
       </div>
       <div class="grid">
         {videos.map((v) => {
-          const src = sourceOf(v.data.url);
+          const src = sourceOf(v.url);
           const yt = src === 'youtube';
           return (
-            <a class="video" href={v.data.url} target={yt ? '_blank' : undefined} rel={yt ? 'noopener' : undefined}>
+            <a class="video" href={v.url} target={yt ? '_blank' : undefined} rel={yt ? 'noopener' : undefined}>
               <div class="ph frame">
                 <span class:list={['play', { ghost: yt }]} aria-hidden="true">
                   <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5l11 7-11 7z"></path></svg>
                 </span>
               </div>
-              <div class="t">{v.data.title}</div>
-              <div class="muted s">{v.data.comedian ? `${v.data.comedian} · ` : ''}{yt ? 'ссылка на YouTube ↗' : src}</div>
+              <div class="t">{v.title}</div>
+              <div class="muted s">{v.comedian ? `${v.comedian} · ` : ''}{yt ? 'ссылка на YouTube ↗' : src}</div>
             </a>
           );
         })}

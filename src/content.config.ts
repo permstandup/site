@@ -38,6 +38,8 @@ const comedians = defineCollection({
     name: z.string(),
     role: z.enum(['resident', 'guest']).default('resident'),
     city: z.string().optional(),
+    /** Одна строка под именем в списке комиков */
+    tagline: z.string().optional(),
     photo: z.string().optional(),
     telegram: z.string().url().optional(),
     vk: z.string().url().optional(),

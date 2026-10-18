@@ -1,6 +1,7 @@
 ---
 name: Артем Дылдин
 role: resident
+tagline: "[короткое био в одну строку]"
 order: 1
 visible: true
 ---
