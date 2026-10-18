@@ -41,12 +41,15 @@ const meta = [p.time, FORMAT_LABEL[d.format], d.age, d.priceFrom ? `от ${d.pri
   <div class="action">
     {cancelled ? (
       <a class="btn btn-outline" href={eventUrl(event)}>Как вернуть билет</a>
-    ) : soldOut ? (
-      <span class="btn btn-outline" aria-disabled="true">Sold out</span>
-    ) : d.ticketUrl ? (
-      <a class="btn btn-accent-outline" href={d.ticketUrl}>Билеты</a>
     ) : (
-      <a class="btn btn-accent-outline" href={eventUrl(event)}>Подробнее</a>
+      <>
+        <a class="btn btn-outline" href={eventUrl(event)}>Подробнее</a>
+        {soldOut ? (
+          <span class="btn btn-outline off" aria-disabled="true">Sold out</span>
+        ) : d.ticketUrl && (
+          <a class="btn btn-accent-outline" href={d.ticketUrl}>Билеты</a>
+        )}
+      </>
     )}
   </div>
 </article>
@@ -65,8 +68,9 @@ const meta = [p.time, FORMAT_LABEL[d.format], d.age, d.priceFrom ? `от ${d.pri
   .title a::after { content: ''; position: absolute; inset: 0; }
   .info { position: relative; }
   .meta { font-size: 15px; color: var(--c-muted); }
-  .action { position: relative; z-index: 1; }
-  .soldout { opacity: .6; }
+  .action { position: relative; z-index: 1; display: flex; gap: 10px; flex-wrap: wrap; justify-content: flex-end; }
+  .off { opacity: .6; }
+  .soldout .date, .soldout .info { opacity: .6; }
   .cancelled .day { text-decoration: line-through; color: var(--c-muted); }
   .cancelled .title a { color: #c9d0cf; }
 
@@ -76,7 +80,7 @@ const meta = [p.time, FORMAT_LABEL[d.format], d.age, d.priceFrom ? `от ${d.pri
     .mon { font-size: 12px; }
     .title { font-size: 18px; }
     .meta { font-size: 14px; }
-    .action { grid-column: 2; }
+    .action { grid-column: 2; justify-content: flex-start; }
     .action .btn { min-height: 40px; padding: 8px 16px; font-size: 15px; }
   }
 </style>

@@ -140,3 +140,27 @@ test('темы: CSS сайта совпадает с shared/themes.ts', async ()
     for (const v of [t.accent, t.hover, t.onAccent, t.glowRgb]) assert.ok(block.includes(v), `${k}: ${v}`);
   }
 });
+
+// ---------- open mic: ведущий; страница «Мероприятия» ----------
+
+test('open mic: ведущий должен быть из списка комиков, ссылка — только Telegram/VK', async () => {
+  const put = (data: Record<string, unknown>) => call(req('PUT', '/api/entries/events/2026-12-30-om', { data, body: '', baseSha: null }));
+  const om = { ...ev('2026-12-30T20:00'), format: 'openmic' };
+  assert.equal((await put({ ...om, host: 'no-such-comic' })).status, 422);
+  assert.equal((await put({ ...om, hostUrl: 'https://evil.example/x' })).status, 422);
+  assert.equal((await put({ ...om, host: 'artem-dyldin', hostUrl: 'https://t.me/host' })).status, 200);
+});
+
+test('мероприятия: контакт только Telegram/VK, фото только из /uploads', async () => {
+  assert.equal((await putSettings((s) => { s.venue.contact = 'https://evil.example'; })).status, 422);
+  assert.equal((await putSettings((s) => { s.venue.photos = ['https://evil.example/a.jpg']; })).status, 422);
+});
+
+test('Qtickets: дата убирается из названия, формат определяется, общий текст вырезается', () => {
+  const html = `<meta property="og:title" content="Билеты на Открытый микрофон, 21 октября 2026, Пермский стендап-клуб (Пермь) – Qtickets Афиша">
+    <meta property="og:description" content="Выступить может любой желающий! Возрастное ограничение 18+ Обращаем ваше внимание, что билеты не привязаны к месту. Приходите к началу сбора, чтобы сделать заказ еды и напитков.">`;
+  const r = parseQtickets(html, 'https://perm.qtickets.events/1-x');
+  assert.equal(r.title, 'Открытый микрофон');
+  assert.equal(r.format, 'openmic');
+  assert.equal(r.description, 'Выступить может любой желающий!');
+});

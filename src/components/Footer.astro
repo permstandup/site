@@ -1,5 +1,5 @@
 ---
-import { settings, telHref } from '../lib/settings';
+import { settings, telHref, isOn } from '../lib/settings';
 ---
 <footer class="site-footer">
   <div class="container grid">
@@ -17,6 +17,7 @@ import { settings, telHref } from '../lib/settings';
       <div class="muted label">Билеты</div>
       <div><a href={settings.links.qtickets}>Qtickets</a></div>
       <div><a href={settings.links.yandexAfisha}>Яндекс Афиша</a></div>
+      {isOn('venue') && <div class="gap"><a href="/arenda/">Ваше мероприятие в клубе</a></div>}
     </div>
     <div class="muted legal">
       <span class="age">18+</span>
@@ -34,5 +35,6 @@ import { settings, telHref } from '../lib/settings';
   .name { font-size: 24px; font-weight: 600; line-height: 1.1; margin-bottom: 8px; }
   .label { margin-bottom: 6px; }
   .legal { font-size: 14px; }
+  .gap { margin-top: 10px; }
   .age { display: inline-block; border: 1px solid currentColor; border-radius: 6px; padding: 1px 8px; font-weight: 600; margin-bottom: 10px; }
 </style>

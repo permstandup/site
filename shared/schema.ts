@@ -83,6 +83,9 @@ export const eventFields = {
   important: z.array(line(200)).max(10).optional(),
   published: z.boolean().default(true),
   seoDescription: line(200).optional(),
+  /** Open mic: ведущий (комик из списка) и ссылка для записи на выступление */
+  host: slug.optional(),
+  hostUrl: z.union([telegramUrl, vkUrl]).optional(),
 };
 export const eventSchema = z.object(eventFields).strict();
 export const EVENT_BODY_MAX = 3000;
@@ -175,6 +178,26 @@ export const seoSchema = z.object({
   }).strict().default({ home: { title: '', description: '' }, afisha: { title: '', description: '' }, comics: { title: '', description: '' }, openmic: { title: '', description: '' }, contacts: { title: '', description: '' } }),
 }).strict();
 
+export const DEFAULT_VENUE = {
+  title: 'Ваше мероприятие в клубе',
+  lead: 'Двери стендап-клуба открыты для ваших мероприятий, игр, встреч и праздников.',
+  servicesTitle: 'В комплекте по необходимости',
+  services: ['Ведущий', 'Диджей', 'Фотограф и видеограф', 'Комики', 'Администраторы, официанты и бармены', 'Любые артисты под запрос'],
+  note: 'Свет, звук, кухня и бар — работают.',
+  photos: [] as string[],
+  contact: '',
+};
+export const venueSchema = z.object({
+  title: line(80).min(1),
+  lead: text(600),
+  servicesTitle: line(80),
+  services: z.array(line(120)).max(12),
+  note: line(200),
+  photos: z.array(uploadPath).max(8),
+  /** Куда писать по мероприятиям: Telegram или VK. Пусто — Telegram клуба и телефон. */
+  contact: z.union([z.literal(''), telegramUrl, vkUrl]),
+}).strict();
+
 export const settingsSchema = z.object({
   name: line(80).min(1),
   shortName: line(40),
@@ -191,6 +214,7 @@ export const settingsSchema = z.object({
   }).strict(),
   sections: z.object({
     comics: z.boolean(), photos: z.boolean(), openmic: z.boolean(), facts: z.boolean(), video: z.boolean(),
+    venue: z.boolean().default(true),
   }).strict(),
   importantDefault: z.array(line(200)).max(10),
   texts: z.object({ heroLead: text(400), openMic: text(400) }).strict(),
@@ -204,6 +228,8 @@ export const settingsSchema = z.object({
   }).strict(),
   about: z.object({ paragraphs: z.array(text(1200)).max(6), requisites: line(300) }).strict(),
   comicsLead: line(200),
+  /** Страница «Мероприятия»: аренда зала под свои события */
+  venue: venueSchema.default(DEFAULT_VENUE),
   theme: z.enum(THEMES).default('violet'),
   home: homeSchema.default({ featured: '', featuredLabel: 'Главное шоу недели', featuredText: '', blocks: DEFAULT_HOME_BLOCKS }),
   banner: bannerSchema.default({ enabled: false, text: '', link: '', linkLabel: '', until: '', tone: 'accent' }),

@@ -1,6 +1,7 @@
 import { h, icon, setChildren } from '../dom';
 import type { App } from '../main';
-import { api } from '../api';
+import { api, imageUrl } from '../api';
+import { prepareImage } from '../image';
 import { HOME_BLOCKS, type Settings } from '../../../../shared/schema';
 import { THEME_VALUES } from '../../../../shared/themes';
 import { isPast } from './shows';
@@ -13,6 +14,7 @@ const SECTIONS: Array<[keyof Settings['sections'], string, string]> = [
   ['openmic', 'Open mic', 'Меню, блок на главной, страница'],
   ['facts', 'Факты о клубе', 'Четыре карточки на главной'],
   ['video', 'Видео', 'Блок на главной'],
+  ['venue', 'Мероприятия', 'Меню, страница «Ваше мероприятие»'],
 ];
 
 export function settingsView(app: App, logout: () => void) {
@@ -119,6 +121,29 @@ export function settingsView(app: App, logout: () => void) {
       field('Описание в поиске', textArea(str(() => pg.description, (v) => { pg.description = v; }), { rows: 2, max: 200, placeholder: 'Пусто — по умолчанию' }), { counter: () => `${pg.description.length} / 200` }));
   }));
 
+  // ----- мероприятия (аренда зала) -----
+  const venuePhotos = h('div', { class: 'pgrid' });
+  const renderVenuePhotos = () => setChildren(venuePhotos, ...s.venue.photos.map((src, i) => h('div', { class: ['pcard', i === 0 && 'top'] },
+    h('div', { class: 'pimg' },
+      h('img', { src: imageUrl(src), alt: '' }),
+      h('span', { class: 'pnum' }, i === 0 ? '1 · главное' : String(i + 1)),
+      h('button', { type: 'button', class: 'pdel', 'aria-label': `Убрать фото ${i + 1}`, onclick: () => { s.venue.photos.splice(i, 1); markDirty(); renderVenuePhotos(); } }, icon('x', 14))),
+    h('div', { class: 'pmeta' }, h('div', { class: 'row' },
+      h('button', { type: 'button', class: 'icon-btn', 'aria-label': 'Левее', disabled: i === 0, onclick: () => { [s.venue.photos[i - 1], s.venue.photos[i]] = [s.venue.photos[i], s.venue.photos[i - 1]]; markDirty(); renderVenuePhotos(); } }, icon('up', 16)),
+      h('button', { type: 'button', class: 'icon-btn', 'aria-label': 'Правее', disabled: i === s.venue.photos.length - 1, onclick: () => { [s.venue.photos[i + 1], s.venue.photos[i]] = [s.venue.photos[i], s.venue.photos[i + 1]]; markDirty(); renderVenuePhotos(); } }, icon('down', 16)))))));
+  renderVenuePhotos();
+  const venueFiles = h('input', { type: 'file', accept: 'image/*', multiple: true, class: 'visually-hidden', id: 'venue-files' });
+  const venueStatus = h('span', { class: 'muted small' });
+  venueFiles.addEventListener('change', async () => {
+    const files = [...(venueFiles.files ?? [])].slice(0, 8 - s.venue.photos.length);
+    venueFiles.value = '';
+    for (const [n, f] of files.entries()) {
+      venueStatus.textContent = `Загружаю ${n + 1} из ${files.length}…`;
+      try { s.venue.photos.push((await api.upload(await prepareImage(f))).src); markDirty(); renderVenuePhotos(); } catch (e) { showError(e); }
+    }
+    venueStatus.textContent = files.length ? 'Готово — нажмите «Сохранить» вверху страницы' : '';
+  });
+
   return h('div', { class: 'page' },
     h('div', { class: 'page-head' }, h('h1', null, 'Настройки клуба'), saveBtn),
     issuesBox,
@@ -136,6 +161,18 @@ export function settingsView(app: App, logout: () => void) {
           field('Короткий текст (необязательно)', textInput(str(() => s.home.featuredText, (v) => { s.home.featuredText = v; }), { max: 200, placeholder: 'Почему стоит прийти' })))),
       h('div', { class: 'field' }, h('span', { class: 'label' }, 'Порядок блоков и заголовки'),
         h('span', { class: 'hint' }, 'Первый экран с ближайшим шоу всегда сверху. Пустой заголовок — стандартный.'), blocksBox)),
+    card('Мероприятия — аренда зала',
+      h('p', { class: 'muted small' }, 'Страница «Ваше мероприятие в клубе» (/arenda/). Включается и выключается в «Разделах сайта» выше.'),
+      field('Заголовок', textInput(str(() => s.venue.title, (v) => { s.venue.title = v; }), { max: 80 })),
+      field('Текст', textArea(str(() => s.venue.lead, (v) => { s.venue.lead = v; }), { rows: 3, max: 600 })),
+      field('Заголовок списка', textInput(str(() => s.venue.servicesTitle, (v) => { s.venue.servicesTitle = v; }), { max: 80 })),
+      h('div', { class: 'field' }, h('span', { class: 'label' }, 'Что можно заказать'),
+        stringList({ get: () => s.venue.services, set: (v) => { s.venue.services = v; } }, { max: 12, addLabel: '+ Пункт', maxLen: 120 })),
+      field('Строка под списком', textInput(str(() => s.venue.note, (v) => { s.venue.note = v; }), { max: 200, placeholder: 'Свет, звук, кухня, бар — работают.' })),
+      field('Куда писать по мероприятиям (Telegram или VK)', textInput(str(() => s.venue.contact, (v) => { s.venue.contact = v.trim(); }), { type: 'url', max: 300, placeholder: 'Пусто — Telegram-канал клуба' })),
+      h('div', { class: 'field' }, h('span', { class: 'label' }, 'Фото зала (до 8, первое — крупно)'),
+        h('label', { class: 'drop', for: 'venue-files' }, icon('upload', 24), h('span', { class: 'strong' }, 'Добавить фото'), venueStatus),
+        venueFiles, venuePhotos)),
     card('Внешний вид',
       h('p', { class: 'muted small' }, 'Меняется акцентный цвет: кнопки, метки, подсветка. Все темы проверены на читаемость.'),
       themesBox),

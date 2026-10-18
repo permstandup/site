@@ -1,11 +1,14 @@
 ---
 import Base from '../layouts/Base.astro';
 import EventRow from '../components/EventRow.astro';
-import { getUpcomingEvents } from '../lib/events';
-import { settings, isOn, openMicContact, seoFor } from '../lib/settings';
+import { getUpcomingEvents, nextOpenMicSignup } from '../lib/events';
+import { settings, isOn, seoFor } from '../lib/settings';
 
 const om = settings.openMic;
-const mics = (await getUpcomingEvents()).filter((e) => e.data.format === 'openmic').slice(0, 4);
+const upcomingAll = await getUpcomingEvents();
+const mics = upcomingAll.filter((e) => e.data.format === 'openmic').slice(0, 4);
+const signup = await nextOpenMicSignup(upcomingAll);
+const openMicContact = signup.url;
 const hostIsTelegram = /t\.me\//.test(openMicContact);
 
 const faqLd = {
@@ -35,6 +38,7 @@ const faqLd = {
         <div class="display su-t">Записаться</div>
         <p>Напиши ведущему: как тебя зовут, есть ли опыт и в какой день хочешь выступить.</p>
         <a class="btn btn-primary btn-lg btn-block" href={openMicContact}>Написать ведущему{hostIsTelegram ? ' в Telegram' : ''}</a>
+        {signup.hostName && <div class="small">Ведущий ближайшего open mic: <b>{signup.hostName}</b></div>}
         {om.contactNote && <div class="muted small">{om.contactNote}</div>}
       </div>
     </div>

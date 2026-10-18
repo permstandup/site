@@ -4,7 +4,7 @@
  */
 import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtemp, cp, rm, readFile } from 'node:fs/promises';
+import { mkdtemp, cp, rm, readFile, readdir } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { randomBytes } from 'node:crypto';
@@ -153,8 +153,9 @@ test('вход: свой аккаунт с 2FA — выдаётся сессия
 // ---------- CSRF ----------
 
 test('CSRF: запрос с чужого сайта отклоняется', async () => {
-  const sha = await eventSha('2026-10-21-open-mic');
-  const evil = req('DELETE', '/api/entries/events/2026-10-21-open-mic', { cookie: goodCookie(), body: { baseSha: sha }, headers: { origin: 'https://evil.example' } });
+  const first = (await readdir(join(dir, 'src/content/events')))[0].replace(/\.md$/, '');
+  const sha = await eventSha(first);
+  const evil = req('DELETE', `/api/entries/events/${first}`, { cookie: goodCookie(), body: { baseSha: sha }, headers: { origin: 'https://evil.example' } });
   assert.equal((await call(evil)).status, 403);
 });
 

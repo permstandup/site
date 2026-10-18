@@ -122,6 +122,7 @@ export function showEditView(app: App, id: string, query: URLSearchParams, prefi
     take('priceFrom', q.priceFrom, 'цена');
     take('age', q.age, 'возраст');
     take('body', q.description, 'описание');
+    if (isNew && q.format) { d.format = q.format; filled.push('формат'); }
     markDirty();
     rerender();
     toast(filled.length ? `Заполнено из Qtickets: ${filled.join(', ')}. Проверьте перед сохранением.` : 'Новых данных на странице не нашлось');
@@ -153,6 +154,18 @@ export function showEditView(app: App, id: string, query: URLSearchParams, prefi
   timeIn.addEventListener('input', renderRepeatInfo);
 
   // ----- главное шоу недели -----
+  // ----- open mic: ведущий и запись -----
+  const hostSel = h('select', null,
+    h('option', { value: '', selected: !d.host }, '— не указан —'),
+    comics.map((c) => h('option', { value: c.id, selected: d.host === c.id }, c.data.name)));
+  hostSel.addEventListener('change', () => { d.host = hostSel.value || undefined; markDirty(); });
+  const hostCard = card('Open mic: ведущий и запись',
+    h('div', { class: 'grid2' },
+      field('Ведущий', hostSel),
+      field('Ссылка для записи (Telegram или VK ведущего)', textInput({ get: () => d.hostUrl, set: (v) => { d.hostUrl = v?.trim() || undefined; } }, { type: 'url', placeholder: 'https://t.me/…', max: 300 }))),
+    h('p', { class: 'muted small' }, 'На странице шоу появится кнопка «Записаться у ведущего». Если ссылка пустая — возьмётся Telegram/VK из карточки ведущего, а если нет и его — общая ссылка из настроек.'));
+  hostCard.hidden = d.format !== 'openmic';
+
   const settingsData = app.content.settings.data;
   const isFeatured = !isNew && settingsData.home.featured === id;
   const featureBtn = h('button', { type: 'button', class: ['btn', 'btn-block', isFeatured && 'btn-primary-soft'] }, isFeatured ? '★ Главное шоу недели — убрать' : '☆ Сделать главным шоу недели');
@@ -220,7 +233,7 @@ export function showEditView(app: App, id: string, query: URLSearchParams, prefi
         card('Основное',
           field('Название', textInput({ get: () => d.title, set: (v) => { d.title = v ?? ''; } }, { max: 120, required: true })),
           h('div', { class: 'grid2' },
-            field('Формат', select(FORMATS, { get: () => d.format, set: (v) => { d.format = v; } })),
+            field('Формат', select(FORMATS, { get: () => d.format, set: (v) => { d.format = v; hostCard.hidden = v !== 'openmic'; } })),
             field('Возраст', select([['18+', '18+'], ['16+', '16+']], { get: () => d.age, set: (v) => { d.age = v; } }))),
           field('Описание', textArea({ get: () => d.body, set: (v) => { d.body = v ?? ''; } }, { rows: 6, max: 3000, placeholder: 'Формат, чего ждать зрителю, кто ведёт. Абзацы — через пустую строку.' }),
             { counter: () => `${d.body.length} / 3000` })),
@@ -245,6 +258,7 @@ export function showEditView(app: App, id: string, query: URLSearchParams, prefi
             repeatInfo) : null),
         card(null, h('div', { class: 'card-head' }, h('h2', null, 'Состав'), castCount), castBox,
           h('p', { class: 'muted small' }, 'Порядок на сайте — как выбраны (цифра на карточке). Нового комика добавьте в разделе «Комики».')),
+        hostCard,
         card('Важно знать', impBox),
         card('Для поисковиков',
           field('Короткое описание для Яндекса', textInput({ get: () => d.seoDescription, set: (v) => { d.seoDescription = v; } }, { max: 200, placeholder: 'Если пусто — соберётся само из названия, даты и цены' })))),

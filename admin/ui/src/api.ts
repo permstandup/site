@@ -11,7 +11,7 @@ export interface Content {
 }
 export interface Session { login: string; expires: number; admins: string[]; require2fa: boolean }
 export interface Issue { path: string; message: string }
-export interface Imported { title?: string; start?: string; priceFrom?: number; age?: '18+' | '16+'; description?: string; ticketUrl: string; sure: string[] }
+export interface Imported { title?: string; start?: string; priceFrom?: number; age?: '18+' | '16+'; format?: 'standup' | 'openmic' | 'test' | 'solo'; description?: string; ticketUrl: string; sure: string[] }
 export interface DeployStatus { state: 'deployed' | 'building' | 'failed' | 'waiting' | 'unknown' | 'local'; head?: string; updatedAt?: string }
 
 export class ApiError extends Error {

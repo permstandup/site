@@ -27,6 +27,7 @@ export function navItems() {
     { href: '/comics/', label: 'Комики', on: isOn('comics') },
     { href: '/#photos', label: 'Фото', on: isOn('photos') },
     { href: '/open-mic/', label: 'Open mic', on: isOn('openmic') },
+    { href: '/arenda/', label: 'Мероприятия', on: isOn('venue') },
     { href: '/contacts/', label: 'Контакты', on: true },
   ].filter((i) => i.on);
 }

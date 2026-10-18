@@ -3,7 +3,7 @@ import Base from '../../layouts/Base.astro';
 import ComicCard from '../../components/ComicCard.astro';
 import NextShowBar from '../../components/NextShowBar.astro';
 import MapBlock from '../../components/MapBlock.astro';
-import { getUpcomingEvents, getEventComedians, eventUrl, FORMAT_LABEL, type EventEntry } from '../../lib/events';
+import { getUpcomingEvents, getEventComedians, eventUrl, openMicSignup, FORMAT_LABEL, type EventEntry } from '../../lib/events';
 import { dateParts, parseLocal } from '../../lib/dates';
 import { settings, isOn } from '../../lib/settings';
 import { paragraphs } from '../../lib/text';
@@ -26,6 +26,7 @@ const important = d.important?.length ? d.important : settings.importantDefault;
 const comics = isOn('comics') ? await getEventComedians(event) : [];
 const others = upcoming.filter((e) => e.id !== event.id && e.data.status !== 'cancelled').slice(0, 3);
 const about = paragraphs(event.body);
+const signup = d.format === 'openmic' && !cancelled ? await openMicSignup(event) : undefined;
 const price = d.priceFrom ? `от ${d.priceFrom.toLocaleString('ru-RU')} ₽` : undefined;
 
 const jsonLd = {
@@ -83,8 +84,8 @@ const desc = d.seoDescription ?? `${d.title} — ${p.longWithWeekday}, ${p.time}
   )}
 
   <section class="container top">
-    <div class:list={['ph', 'cover', { dim: cancelled }]}>
-      {d.cover ? <img src={d.cover} alt={`Афиша шоу «${d.title}»`} /> : <span>[Обложка шоу]</span>}
+    <div class:list={['poster', 'cover', { dim: cancelled }]}>
+      {d.cover ? <img src={d.cover} alt={`Афиша шоу «${d.title}»`} /> : <div class="poster-empty"><img src="/logo.svg" alt="" /></div>}
     </div>
     <div class="side">
       <div class="tags">
@@ -112,6 +113,24 @@ const desc = d.seoDescription ?? `${d.title} — ${p.longWithWeekday}, ${p.time}
       </div>
     </div>
   </section>
+
+  {signup && (
+    <section class="container block">
+      <div class="card signup">
+        <div>
+          <h2 class="display h3">Хочешь выступить?</h2>
+          <p class="lead">Выступить может любой желающий 18+. Запишись у ведущего — он подскажет, сколько минут на выступление и когда прийти.</p>
+          {signup.hostName && (
+            <p class="host">Ведущий: {signup.hostId ? <a href={`/comics/${signup.hostId}/`}>{signup.hostName}</a> : signup.hostName}</p>
+          )}
+        </div>
+        <div class="signup-a">
+          <a class="btn btn-primary btn-lg" href={signup.url}>Записаться у ведущего</a>
+          <a class="btn btn-outline btn-lg" href="/open-mic/">Правила open mic</a>
+        </div>
+      </div>
+    </section>
+  )}
 
   <section class="container two">
     <div>
@@ -186,7 +205,7 @@ const desc = d.seoDescription ?? `${d.title} — ${p.longWithWeekday}, ${p.time}
     display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 460px), 1fr));
     gap: 48px; align-items: start; padding-block: 24px 56px;
   }
-  .cover { aspect-ratio: 4 / 3; border-radius: var(--r-l); background: radial-gradient(ellipse 70% 60% at 75% 10%, rgba(var(--c-glow-rgb), .35), transparent 70%), var(--c-surface); }
+  .cover { max-width: 560px; width: 100%; }
   .cover.dim { opacity: .5; }
   .side { display: flex; flex-direction: column; gap: 20px; }
   .tags { display: flex; gap: 8px; flex-wrap: wrap; }
@@ -208,6 +227,14 @@ const desc = d.seoDescription ?? `${d.title} — ${p.longWithWeekday}, ${p.time}
   .important li::before { content: counter(n, decimal-leading-zero); color: var(--c-accent); font-weight: 600; min-width: 28px; }
 
   .block { padding-block: 24px 56px; }
+  .block:has(.signup) { padding-block: 0 40px; }
+  .signup {
+    padding: clamp(22px, 4vw, 36px); display: flex; justify-content: space-between; align-items: center; gap: 24px; flex-wrap: wrap;
+    background: radial-gradient(ellipse 60% 120% at 100% 0%, rgba(var(--c-glow-rgb), .28), transparent 70%), var(--c-surface);
+  }
+  .signup > div:first-child { max-width: 640px; display: flex; flex-direction: column; gap: 10px; }
+  .host { font-weight: 600; }
+  .signup-a { display: flex; gap: 12px; flex-wrap: wrap; }
   .comics { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 200px), 1fr)); gap: 20px; }
 
   .last { padding-bottom: 96px; }

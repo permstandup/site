@@ -148,7 +148,7 @@ async function route(req: Req, d: Deps): Promise<Res> {
       const check = eventInput.safeParse({ data: it.data, body: it.body });
       if (!check.success) return error(422, `Шоу №${n + 1}: проверьте поля`, { issues: issues(check.error) });
       const data = check.data.data as Record<string, unknown>;
-      const missing = (data.comedians as string[]).filter((c) => !known.has(c));
+      const missing = [...(data.comedians as string[]), ...(data.host ? [data.host as string] : [])].filter((c) => !known.has(c));
       if (missing.length) return error(422, 'Проверьте поля', { issues: [{ path: 'comedians', message: `Нет комиков: ${missing.join(', ')}` }] });
       delete data.movedFrom; delete data.cancelReason;
       const path = entryPath('events', it.id);
@@ -181,10 +181,11 @@ async function route(req: Req, d: Deps): Promise<Res> {
       const data = parsed.data.data as Record<string, unknown>;
       if (kind === 'events') {
         const known = new Set((await repo.readDir(PATHS.comediansDir)).map((f) => f.path.split('/').pop()!.replace(/\.md$/, '')));
-        const missing = (data.comedians as string[]).filter((c) => !known.has(c));
+        const missing = [...(data.comedians as string[]), ...(data.host ? [data.host as string] : [])].filter((c) => !known.has(c));
         if (missing.length) return error(422, 'Проверьте поля', { issues: [{ path: 'comedians', message: `Нет комиков: ${missing.join(', ')}` }] });
         if (data.status !== 'moved') delete data.movedFrom;
         if (data.status !== 'cancelled') delete data.cancelReason;
+        if (data.format !== 'openmic') { delete data.host; delete data.hostUrl; }
       }
       const content = Buffer.from(serializeEntry(data, parsed.data.body));
       const title = String(data.title ?? data.name);

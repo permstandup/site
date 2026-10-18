@@ -103,3 +103,12 @@ p { margin: 0; }
   html { scroll-behavior: auto; }
   * { transition: none !important; }
 }
+
+/* Афиша шоу (обложка): квадрат, картинка вписывается целиком, без обрезки */
+.poster {
+  aspect-ratio: 1 / 1; border-radius: var(--r-l); overflow: hidden; display: flex; align-items: center; justify-content: center;
+  background: radial-gradient(ellipse 70% 60% at 75% 10%, rgba(var(--c-glow-rgb), .3), transparent 70%), var(--c-surface);
+}
+.poster img { width: 100%; height: 100%; object-fit: contain; }
+.poster-empty { color: var(--c-muted); display: flex; flex-direction: column; align-items: center; gap: 12px; font-size: 15px; text-align: center; padding: 24px; }
+.poster-empty img { width: 96px; height: 96px; opacity: .85; object-fit: contain; }

@@ -29,6 +29,7 @@ export interface Imported {
   start?: string;      // 2026-10-24T18:30
   priceFrom?: number;
   age?: '18+' | '16+';
+  format?: 'standup' | 'openmic' | 'test' | 'solo';
   description?: string;
   ticketUrl: string;
   sure: string[];      // какие поля найдены надёжно
@@ -55,11 +56,24 @@ export function parseQtickets(html: string, url: string, now = new Date()): Impo
   if (ogTitle) {
     let t = clean(ogTitle, 300).replace(/^Билеты на\s+/i, '').replace(/\s+[–—-]\s+Qtickets.*$/i, '');
     t = t.replace(/,\s*[^,]*\([^)]*\)\s*$/, '').replace(/^["«](.*)["»]$/, '$1').trim();
+    // «Открытый микрофон, 21 октября 2026» → «Открытый микрофон» (дата и так есть в отдельном поле)
+    t = t.replace(/,\s*\d{1,2}\s+(января|февраля|марта|апреля|мая|июня|июля|августа|сентября|октября|ноября|декабря)(\s+\d{4})?$/i, '').trim();
     if (t) { out.title = t.slice(0, 120); out.sure.push('title'); }
+    if (out.title) {
+      out.format = /^открытый микрофон|open ?mic/i.test(out.title) ? 'openmic'
+        : /сольн/i.test(out.title) ? 'solo'
+        : /провер|новые шутки|стендап-комики/i.test(out.title) ? 'test' : 'standup';
+    }
   }
 
   const desc = meta(html, 'og:description') ?? meta(html, 'description');
-  if (desc) out.description = clean(desc, 3000);
+  if (desc) {
+    // Убираем общий текст про рассадку и возраст — он и так есть в блоке «Важно знать»
+    out.description = clean(desc, 3000)
+      .replace(/\s*Обращаем ваше внимание[\s\S]*?напитков\.\s*/i, ' ')
+      .replace(/\s*Возрастное ограничение\s*\d{2}\+\.?\s*/gi, ' ')
+      .trim();
+  }
 
   // Дата и время: сначала машиночитаемые (JSON-LD / microdata), потом текст «17 октября … 18:30»
   const iso = /"startDate"\s*:\s*"(\d{4}-\d{2}-\d{2})[T ](\d{2}):(\d{2})/.exec(html)

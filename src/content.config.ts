@@ -10,7 +10,10 @@ import { eventSchema, comedianSchema, galleryItemSchema, videoItemSchema } from 
 /** Шоу. Один файл = одно шоу: src/content/events/<дата>-<название>.md, текст файла — описание (обычный текст). */
 const events = defineCollection({
   loader: glob({ pattern: '**/*.md', base: './src/content/events' }),
-  schema: eventSchema.extend({ comedians: z.array(reference('comedians')).max(20).default([]) }),
+  schema: eventSchema.extend({
+    comedians: z.array(reference('comedians')).max(20).default([]),
+    host: reference('comedians').optional(),
+  }),
 });
 
 /** Комики. Один файл = один комик, текст файла — био. */

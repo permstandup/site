@@ -1,0 +1,89 @@
+---
+/** «Мероприятия»: зал клуба под свои события. Тексты и фото — в админке (Настройки → Мероприятия). */
+import Base from '../layouts/Base.astro';
+import { settings, isOn, telHref } from '../lib/settings';
+
+const v = settings.venue;
+const contact = v.contact || settings.links.telegram;
+const contactIsTg = /t\.me\//.test(contact);
+const [first, ...rest] = v.photos;
+---
+<Base
+  title={v.title}
+  description={`${v.lead} ${settings.city}, ${settings.address}.`.slice(0, 200)}
+  activeNav="/arenda/"
+  ogImage={first}
+  noindex={!isOn('venue')}
+>
+  <section class="hero">
+    <div class="container hero-grid">
+      <div class="text">
+        <div class="eyebrow">{settings.city} · {settings.address}</div>
+        <h1 class="display h1">{v.title}</h1>
+        <p class="lead">{v.lead}</p>
+        <div class="actions">
+          <a class="btn btn-primary btn-lg" href={contact}>Обсудить мероприятие{contactIsTg ? ' в Telegram' : ''}</a>
+          <a class="btn btn-outline btn-lg" href={telHref}>{settings.phone}</a>
+        </div>
+      </div>
+      {first && (
+        <div class="photo main"><img src={first} alt={`Зал Пермского стендап клуба`} /></div>
+      )}
+    </div>
+  </section>
+
+  <section class="container block">
+    <div class="card services">
+      <h2 class="display h3">{v.servicesTitle}</h2>
+      <ul>{v.services.map((s) => <li>{s}</li>)}</ul>
+      {v.note && <p class="note">{v.note}</p>}
+    </div>
+  </section>
+
+  {rest.length > 0 && (
+    <section class="container block">
+      <div class="photos">
+        {rest.map((src, i) => <div class="photo"><img src={src} alt={`Пермский стендап клуб, фото ${i + 2}`} loading="lazy" /></div>)}
+      </div>
+    </section>
+  )}
+
+  <section class="container block last">
+    <div class="card cta">
+      <div>
+        <div class="display h3">Расскажите, что задумали</div>
+        <p class="muted">Дата, сколько гостей, что нужно — подберём формат и посчитаем стоимость.</p>
+      </div>
+      <div class="actions">
+        <a class="btn btn-primary btn-lg" href={contact}>Написать</a>
+        <a class="btn btn-outline btn-lg" href={telHref}>Позвонить</a>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .hero { background: radial-gradient(ellipse 600px 460px at 85% 0%, rgba(var(--c-glow-rgb), .22), transparent 70%); }
+  .hero-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr));
+    gap: clamp(28px, 5vw, 56px); align-items: center; padding-block: clamp(40px, 6vw, 72px);
+  }
+  .text { display: flex; flex-direction: column; gap: 18px; }
+  .text .lead { max-width: 560px; }
+  .actions { display: flex; gap: 12px; flex-wrap: wrap; }
+  .photo { border-radius: var(--r-l); overflow: hidden; background: var(--c-surface); aspect-ratio: 3 / 4; }
+  .photo img { width: 100%; height: 100%; object-fit: cover; }
+  .photo.main { max-height: 620px; justify-self: center; width: 100%; max-width: 480px; }
+  .block { padding-block: 24px 40px; }
+  .services { padding: clamp(22px, 4vw, 36px); display: flex; flex-direction: column; gap: 18px; }
+  .services ul { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr)); gap: 10px 24px; }
+  .services li { display: flex; gap: 12px; align-items: baseline; font-size: 18px; }
+  .services li::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: var(--c-accent); flex: none; transform: translateY(-2px); }
+  .note { color: var(--c-text-2); border-top: 1px solid var(--c-line); padding-top: 16px; font-weight: 600; }
+  .photos { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); gap: 16px; }
+  .last { padding-bottom: 96px; }
+  .cta {
+    padding: clamp(24px, 4vw, 40px); display: flex; justify-content: space-between; align-items: center; gap: 24px; flex-wrap: wrap;
+    background: radial-gradient(ellipse 50% 120% at 90% 0%, rgba(var(--c-glow-rgb), .28), transparent 70%), var(--c-surface);
+  }
+</style>

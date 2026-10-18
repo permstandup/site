@@ -1,4 +1,5 @@
-import { getCollection, getEntries, type CollectionEntry } from 'astro:content';
+import { getCollection, getEntries, getEntry, type CollectionEntry } from 'astro:content';
+import { settings } from './settings';
 import { parseLocal, weekKey } from './dates';
 
 export type EventEntry = CollectionEntry<'events'>;
@@ -54,4 +55,21 @@ export async function getEventComedians(e: EventEntry) {
 
 export function eventUrl(e: EventEntry) {
   return `/shows/${e.id}/`;
+}
+
+/**
+ * Open mic: кто ведёт и куда писать, чтобы записаться выступить.
+ * Порядок: ссылка, указанная в шоу → Telegram/VK ведущего из карточки комика →
+ * общая ссылка из настроек → Telegram клуба.
+ */
+export async function openMicSignup(e: EventEntry) {
+  const host = e.data.host ? await getEntry(e.data.host) : undefined;
+  const url = e.data.hostUrl || host?.data.telegram || host?.data.vk || settings.links.openMicHost || settings.links.telegram;
+  return { hostName: host?.data.name, hostId: host?.data.visible ? host.id : undefined, url };
+}
+
+/** Ссылка для записи на ближайший open mic (для страницы Open mic и главной) */
+export async function nextOpenMicSignup(upcoming: EventEntry[]) {
+  const next = upcoming.find((e) => e.data.format === 'openmic' && e.data.status !== 'cancelled');
+  return next ? openMicSignup(next) : { hostName: undefined, hostId: undefined, url: settings.links.openMicHost || settings.links.telegram };
 }

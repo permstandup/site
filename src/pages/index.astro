@@ -6,12 +6,13 @@ import ComicCard from '../components/ComicCard.astro';
 import PhotoMosaic from '../components/PhotoMosaic.astro';
 import VideoGrid from '../components/VideoGrid.astro';
 import NextShowBar from '../components/NextShowBar.astro';
-import { getUpcomingEvents, nextOnSale, eventUrl } from '../lib/events';
+import { getUpcomingEvents, nextOnSale, eventUrl, nextOpenMicSignup } from '../lib/events';
 import { dateParts, parseLocal } from '../lib/dates';
-import { settings, isOn, openMicContact, seoFor } from '../lib/settings';
+import { settings, isOn, seoFor } from '../lib/settings';
 import { HOME_BLOCKS } from '../../shared/schema';
 
 const upcoming = await getUpcomingEvents();
+const openMicContact = (await nextOpenMicSignup(upcoming)).url;
 const home = settings.home;
 /** Топ-шоу недели (выбирается в админке). Отменённое или прошедшее — не показывается. */
 const featured = home.featured ? upcoming.find((e) => e.id === home.featured && e.data.status !== 'cancelled') : undefined;
@@ -57,7 +58,11 @@ const jsonLd = {
 
       {next && nextP ? (
         <div class:list={['card', 'next', { featured }]}>
-          {featured && next.data.cover && <img class="next-cover" src={next.data.cover} alt="" />}
+          {featured && (
+            <a class="poster next-poster" href={eventUrl(next)} aria-label={`Подробнее: ${next.data.title}`}>
+              {next.data.cover ? <img src={next.data.cover} alt={`Афиша шоу «${next.data.title}»`} /> : <span class="poster-empty"><img src="/logo.svg" alt="" />Обложка появится позже</span>}
+            </a>
+          )}
           <div class="eyebrow">{featured ? (home.featuredLabel || 'Главное шоу недели') : 'Ближайшее шоу'}</div>
           <a class="display next-title" href={eventUrl(next)}>{next.data.title}</a>
           {featured && home.featuredText && <p class="next-text">{home.featuredText}</p>}
@@ -67,11 +72,16 @@ const jsonLd = {
             {next.data.priceFrom && <div><dt>Билеты</dt><dd>от {next.data.priceFrom.toLocaleString('ru-RU')} ₽</dd></div>}
           </dl>
           {!featured && <p class="muted note">Сбор гостей за 30 минут. Рассадка свободная — компании лучше брать билеты одним заказом.</p>}
-          {nextSoldOut ? (
-            <a class="btn btn-outline btn-lg" href={eventUrl(next)}>Билеты закончились — подробнее</a>
-          ) : (
-            <a class="btn btn-primary btn-lg" href={next.data.ticketUrl ?? eventUrl(next)}>Купить билет</a>
-          )}
+          <div class="next-actions">
+            {nextSoldOut ? (
+              <a class="btn btn-outline btn-lg" href={eventUrl(next)}>Билеты закончились — подробнее</a>
+            ) : (
+              <>
+                <a class="btn btn-primary btn-lg" href={next.data.ticketUrl ?? eventUrl(next)}>Купить билет</a>
+                <a class="btn btn-outline btn-lg" href={eventUrl(next)}>Подробнее</a>
+              </>
+            )}
+          </div>
         </div>
       ) : (
         <div class="card next">
@@ -154,7 +164,7 @@ const jsonLd = {
   }
   .hero-grid {
     display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
-    gap: 48px; align-items: end; padding-block: clamp(48px, 8vw, 96px) clamp(48px, 8vw, 104px);
+    gap: 48px; align-items: center; padding-block: clamp(48px, 8vw, 96px) clamp(48px, 8vw, 104px);
   }
   @media (max-width: 960px) { .hero-grid { grid-template-columns: minmax(0, 1fr); gap: 32px; } }
   .kicker { font-size: 14px; letter-spacing: .12em; text-transform: uppercase; margin-bottom: 18px; }
@@ -171,8 +181,11 @@ const jsonLd = {
     background: radial-gradient(ellipse 90% 70% at 100% 0%, rgba(var(--c-glow-rgb), .3), transparent 70%), var(--c-surface);
   }
   .next.featured .eyebrow { align-self: flex-start; background: var(--c-accent); color: var(--c-on-accent); border-radius: var(--r-pill); padding: 4px 12px; letter-spacing: .08em; }
-  .next-cover { margin: calc(-1 * clamp(22px, 3vw, 32px)) calc(-1 * clamp(22px, 3vw, 32px)) 4px; width: calc(100% + 2 * clamp(22px, 3vw, 32px)); max-width: none; aspect-ratio: 16 / 9; object-fit: cover; }
+  .next-poster { border-radius: var(--r-m); background-color: var(--c-bg); }
   .next-text { color: var(--c-text-2); }
+  .next-actions { display: grid; grid-template-columns: 1fr auto; gap: 10px; }
+  .next-actions > :only-child { grid-column: 1 / -1; }
+  @media (max-width: 400px) { .next-actions { grid-template-columns: 1fr; } }
   .next-title { font-size: clamp(32px, 3.4vw, 44px); font-weight: 600; line-height: 1.05; text-decoration: none; }
   .facts { display: flex; flex-wrap: wrap; gap: 12px 28px; margin: 0; }
   .facts dt { color: var(--c-muted); font-size: 14px; }
