@@ -1,5 +1,6 @@
 ---
-import { getCollection, render, type CollectionEntry } from 'astro:content';
+import { getCollection, type CollectionEntry } from 'astro:content';
+import { paragraphs } from '../../lib/text';
 import Base from '../../layouts/Base.astro';
 import EventRow from '../../components/EventRow.astro';
 import VideoGrid from '../../components/VideoGrid.astro';
@@ -14,7 +15,7 @@ export async function getStaticPaths() {
 interface Props { comic: CollectionEntry<'comedians'> }
 const { comic } = Astro.props;
 const c = comic.data;
-const { Content } = await render(comic);
+const bioParas = paragraphs(comic.body);
 
 const shows = (await getUpcomingEvents())
   .filter((e) => e.data.status !== 'cancelled' && e.data.comedians.some((r) => r.id === comic.id));
@@ -28,7 +29,7 @@ const videos = [...fromList, ...own.filter((o) => !fromList.some((f) => f.url ==
 
 const [first, ...rest] = c.name.split(' ');
 const roleLabel = c.role === 'resident' ? 'Резидент клуба' : 'Гость клуба';
-const bio = (comic.body ?? '').trim().replace(/\s+/g, ' ');
+const bio = bioParas.join(' ');
 const jsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Person',
@@ -58,7 +59,7 @@ const jsonLd = {
       <h1 class="display name">
         {rest.length ? <><span class="n1">{first}</span><span class="n2">{rest.join(' ')}</span></> : <span class="n2">{c.name}</span>}
       </h1>
-      <div class="lead bio"><Content /></div>
+      <div class="lead bio">{bioParas.map((p) => <p>{p}</p>)}</div>
       {(c.telegram || c.vk) && (
         <div class="links">
           {c.telegram && <a class="btn btn-outline" href={c.telegram}>Telegram</a>}
