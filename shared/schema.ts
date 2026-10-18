@@ -129,6 +129,50 @@ export const videosSchema = z.array(videoItemSchema).max(50)
 
 // ---------- настройки клуба ----------
 
+/** Цветовые темы — только из готового списка (значения цветов — в shared/themes.ts) */
+export const THEMES = ['violet', 'coral', 'mint', 'sky'] as const;
+
+/** Блоки главной страницы, которые можно переставлять. Первый экран (шапка с ближайшим шоу) всегда сверху. */
+export const HOME_BLOCKS = ['afisha', 'facts', 'comics', 'video', 'photos', 'openmic'] as const;
+export const DEFAULT_HOME_BLOCKS = HOME_BLOCKS.map((id) => ({ id, title: '' }));
+
+/** Ссылка в плашке: https-адрес или страница самого сайта (/afisha/ и т.п.) */
+const bannerLink = z.union([z.literal(''), httpsUrl, z.string().max(100).regex(/^\/(?!\/)[a-z0-9\-/#]*$/, 'Ссылка на страницу сайта, например /afisha/')]);
+const DATE_RE = /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/;
+const seoPage = z.object({ title: line(70).default(''), description: line(200).default('') }).strict();
+
+export const homeSchema = z.object({
+  /** Топ-шоу: id шоу, которое выделяется на главной. Пусто — нет. После даты шоу выделение пропадает само. */
+  featured: z.union([z.literal(''), slug]).default(''),
+  featuredLabel: line(40).default('Главное шоу недели'),
+  featuredText: line(200).default(''),
+  blocks: z.array(z.object({ id: z.enum(HOME_BLOCKS), title: line(60).default('') }).strict()).max(HOME_BLOCKS.length)
+    .refine((a) => new Set(a.map((b) => b.id)).size === a.length, 'Блок повторяется')
+    .default(DEFAULT_HOME_BLOCKS),
+}).strict();
+
+export const bannerSchema = z.object({
+  enabled: z.boolean().default(false),
+  text: line(160).default(''),
+  link: bannerLink.default(''),
+  linkLabel: line(40).default(''),
+  /** Последний день показа (включительно), ГГГГ-ММ-ДД. Пусто — пока не выключат. */
+  until: z.union([z.literal(''), z.string().regex(DATE_RE, 'Дата в формате ГГГГ-ММ-ДД')]).default(''),
+  tone: z.enum(['accent', 'warning']).default('accent'),
+}).strict().refine((b) => !b.enabled || b.text.trim().length > 0, { message: 'Напишите текст плашки', path: ['text'] });
+
+export const seoSchema = z.object({
+  /** Код подтверждения Яндекс Вебмастера (из meta-тега yandex-verification) */
+  yandexVerification: z.union([z.literal(''), z.string().regex(/^[0-9a-f]{16}$/, '16 символов: цифры и буквы a–f')]).default(''),
+  pages: z.object({
+    home: seoPage.default({ title: '', description: '' }),
+    afisha: seoPage.default({ title: '', description: '' }),
+    comics: seoPage.default({ title: '', description: '' }),
+    openmic: seoPage.default({ title: '', description: '' }),
+    contacts: seoPage.default({ title: '', description: '' }),
+  }).strict().default({ home: { title: '', description: '' }, afisha: { title: '', description: '' }, comics: { title: '', description: '' }, openmic: { title: '', description: '' }, contacts: { title: '', description: '' } }),
+}).strict();
+
 export const settingsSchema = z.object({
   name: line(80).min(1),
   shortName: line(40),
@@ -158,6 +202,10 @@ export const settingsSchema = z.object({
   }).strict(),
   about: z.object({ paragraphs: z.array(text(1200)).max(6), requisites: line(300) }).strict(),
   comicsLead: line(200),
+  theme: z.enum(THEMES).default('violet'),
+  home: homeSchema.default({ featured: '', featuredLabel: 'Главное шоу недели', featuredText: '', blocks: DEFAULT_HOME_BLOCKS }),
+  banner: bannerSchema.default({ enabled: false, text: '', link: '', linkLabel: '', until: '', tone: 'accent' }),
+  seo: seoSchema.default({ yandexVerification: '', pages: { home: { title: '', description: '' }, afisha: { title: '', description: '' }, comics: { title: '', description: '' }, openmic: { title: '', description: '' }, contacts: { title: '', description: '' } } }),
 }).strict();
 
 export type EventData = z.infer<typeof eventSchema>;

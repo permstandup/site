@@ -4,7 +4,7 @@ import { api, imageUrl } from '../api';
 import type { EventData } from '../../../../shared/schema';
 import {
   busy, card, confirmBox, field, markClean, numberInput, segmented, select, showError, stringList,
-  textArea, textInput, toast, toggle, fmtShort, markDirty,
+  textArea, textInput, toast, toggle, fmtShort, markDirty, isDirty,
 } from '../ui';
 import { prepareImage } from '../image';
 import { slugify, uniqueId } from '../slug';
@@ -14,7 +14,7 @@ type Draft = EventData & { body: string };
 
 const FORMATS: Array<[EventData['format'], string]> = [['standup', 'Стендап-шоу'], ['openmic', 'Открытый микрофон'], ['test', 'Проверочный концерт'], ['solo', 'Сольный концерт']];
 
-export function showEditView(app: App, id: string, query: URLSearchParams) {
+export function showEditView(app: App, id: string, query: URLSearchParams, prefill?: Draft): HTMLElement {
   const isNew = id === 'new';
   const src = isNew ? app.content.events.find((e) => e.id === query.get('copy')) : app.content.events.find((e) => e.id === id);
   if (!isNew && !src) return h('div', { class: 'page' }, h('p', null, 'Такого шоу нет. '), h('a', { href: '#/shows' }, '← Все шоу'));
@@ -22,8 +22,9 @@ export function showEditView(app: App, id: string, query: URLSearchParams) {
   const base: Draft = src
     ? { ...structuredClone(src.data), body: src.body }
     : { title: '', format: 'standup', start: '', age: '18+', seats: 'ok', status: 'plan', comedians: [], published: false, body: '' };
-  if (isNew && src) { base.title = `${base.title} (копия)`; base.published = false; base.status = 'plan'; delete base.movedFrom; delete base.cancelReason; }
-  const d: Draft = base;
+  if (isNew && src && !prefill) { base.title = `${base.title} (копия)`; base.published = false; base.status = 'plan'; delete base.movedFrom; delete base.cancelReason; }
+  const d: Draft = prefill ?? base;
+  const rerender = () => { page.replaceWith(showEditView(app, id, query, d)); };
   const sha = isNew ? null : src!.sha;
   const issuesBox = h('div');
 
@@ -105,6 +106,64 @@ export function showEditView(app: App, id: string, query: URLSearchParams) {
     renderCover();
   });
 
+  // ----- данные из Qtickets -----
+  const importBtn = h('button', { type: 'button', class: 'btn' }, 'Заполнить из Qtickets');
+  importBtn.addEventListener('click', () => busy(importBtn, async () => {
+    if (!d.ticketUrl) { toast('Сначала вставьте ссылку на шоу в Qtickets', 'err'); return; }
+    const q = await api.importQtickets(d.ticketUrl);
+    const filled: string[] = [];
+    const take = <K extends keyof Draft>(k: K, v: Draft[K] | undefined, label: string) => {
+      if (v === undefined || v === '') return;
+      const empty = d[k] === undefined || d[k] === '' || (k === 'body' && !d.body.trim());
+      if (isNew || empty) { d[k] = v; filled.push(label); }
+    };
+    take('title', q.title, 'название');
+    take('start', q.start, 'дата и время');
+    take('priceFrom', q.priceFrom, 'цена');
+    take('age', q.age, 'возраст');
+    take('body', q.description, 'описание');
+    markDirty();
+    rerender();
+    toast(filled.length ? `Заполнено из Qtickets: ${filled.join(', ')}. Проверьте перед сохранением.` : 'Новых данных на странице не нашлось');
+  }));
+
+  // ----- повтор (только для нового шоу) -----
+  let repeat: 'none' | '1' | '2' = 'none';
+  let repeatUntil = '';
+  const repeatInfo = h('p', { class: 'muted small' });
+  const seriesDates = (): string[] => {
+    if (repeat === 'none' || !d.start || !repeatUntil) return [];
+    const [dd, tt] = d.start.split('T');
+    const out: string[] = [];
+    let t = Date.UTC(+dd.slice(0, 4), +dd.slice(5, 7) - 1, +dd.slice(8, 10));
+    const end = Date.UTC(+repeatUntil.slice(0, 4), +repeatUntil.slice(5, 7) - 1, +repeatUntil.slice(8, 10));
+    while (t <= end && out.length < 52) { out.push(`${new Date(t).toISOString().slice(0, 10)}T${tt}`); t += Number(repeat) * 7 * 86400_000; }
+    return out;
+  };
+  const renderRepeatInfo = () => {
+    const list = seriesDates();
+    repeatInfo.textContent = repeat === 'none' ? '' : !repeatUntil ? 'Укажите, до какой даты повторять.'
+      : `Будет создано ${list.length} шоу: ${list.slice(0, 6).map((x) => fmtShort(x).date).join('; ')}${list.length > 6 ? ' …' : ''}${list.length >= 52 ? ' (не больше 52 за раз)' : ''}`;
+  };
+  const untilIn = h('input', { type: 'date' });
+  untilIn.addEventListener('input', () => { repeatUntil = untilIn.value; renderRepeatInfo(); });
+  dateIn.addEventListener('input', renderRepeatInfo);
+  const untilWrap = field('До какой даты (включительно)', untilIn, { hint: 'Создадутся отдельные шоу на каждую дату — потом любое можно поменять или отменить отдельно.' });
+  untilWrap.hidden = true;
+  timeIn.addEventListener('input', renderRepeatInfo);
+
+  // ----- главное шоу недели -----
+  const settingsData = app.content.settings.data;
+  const isFeatured = !isNew && settingsData.home.featured === id;
+  const featureBtn = h('button', { type: 'button', class: ['btn', 'btn-block', isFeatured && 'btn-primary-soft'] }, isFeatured ? '★ Главное шоу недели — убрать' : '☆ Сделать главным шоу недели');
+  featureBtn.addEventListener('click', () => busy(featureBtn, async () => {
+    if (isDirty()) { toast('Сначала сохраните изменения шоу', 'err'); return; }
+    const next = { ...settingsData, home: { ...settingsData.home, featured: isFeatured ? '' : id } };
+    await api.saveList('settings', next, app.content.settings.sha);
+    toast(isFeatured ? 'Шоу больше не выделено на главной' : 'Шоу выделено на главной. На сайте — через 2–3 минуты.');
+    await app.reload(); app.go(`#/shows/${id}`);
+  }));
+
   // ----- сохранение -----
   const save = async () => {
     setChildren(issuesBox, );
@@ -113,6 +172,23 @@ export function showEditView(app: App, id: string, query: URLSearchParams) {
     for (const k of Object.keys(clean)) if (clean[k] === undefined || clean[k] === '') delete clean[k];
     if (Array.isArray(clean.important)) clean.important = (clean.important as string[]).map((s) => s.trim()).filter(Boolean);
     let targetId = id;
+    const series = isNew ? seriesDates() : [];
+    if (series.length > 1) {
+      const taken = new Set(app.content.events.map((e) => e.id));
+      const items = series.map((start) => {
+        const sid = uniqueId(`${start.slice(0, 10)}-${slugify(d.title || 'show', 40)}`, taken);
+        taken.add(sid);
+        return { id: sid, data: { ...clean, start }, body };
+      });
+      try {
+        await api.saveSeries(items);
+        markClean();
+        toast(`Создано ${items.length} шоу${d.published ? '. На сайте — через 2–3 минуты.' : ' (черновики)'}`);
+        await app.reload();
+        app.go('#/shows');
+      } catch (e) { showError(e, issuesBox); }
+      return;
+    }
     if (isNew) {
       if (!d.start) { toast('Укажите дату и время', 'err'); return; }
       targetId = uniqueId(`${d.start.slice(0, 10)}-${slugify(d.title || 'show', 40)}`, new Set(app.content.events.map((e) => e.id)));
@@ -134,7 +210,7 @@ export function showEditView(app: App, id: string, query: URLSearchParams) {
   };
 
   const f = d.start ? fmtShort(d.start) : null;
-  return h('div', { class: 'page' },
+  const page: HTMLElement = h('div', { class: 'page' },
     h('a', { class: 'back', href: '#/shows' }, icon('back', 16), 'Все шоу'),
     h('h1', null, isNew ? (src ? 'Копия шоу' : 'Новое шоу') : d.title),
     !isNew && f ? h('p', { class: 'muted' }, `${f.long}, ${f.time}`) : null,
@@ -153,12 +229,20 @@ export function showEditView(app: App, id: string, query: URLSearchParams) {
             field('Дата', dateIn),
             field('Начало (время Перми)', timeIn),
             field('Цена от, ₽', numberInput({ get: () => d.priceFrom, set: (v) => { d.priceFrom = v; } }, { min: 0, max: 100000 }))),
-          field('Ссылка на билеты (Qtickets)', textInput({ get: () => d.ticketUrl, set: (v) => { d.ticketUrl = v; } }, { type: 'url', placeholder: 'https://perm.qtickets.events/…', max: 500 })),
+          h('div', { class: 'import' },
+            field('Ссылка на билеты (Qtickets)', textInput({ get: () => d.ticketUrl, set: (v) => { d.ticketUrl = v; } }, { type: 'url', placeholder: 'https://perm.qtickets.events/…', max: 500 })),
+            importBtn),
+          h('p', { class: 'muted small' }, 'Вставьте ссылку и нажмите «Заполнить» — название, дата, время и описание подтянутся со страницы Qtickets.'),
           h('div', { class: 'field' }, h('span', { class: 'label' }, 'Места'),
             segmented([['ok', 'Есть места'], ['few', 'Мало мест'], ['out', 'Sold out']], d.seats, (v) => { d.seats = v; }, 'Места')),
           h('div', { class: 'field sep' }, h('span', { class: 'label' }, 'Статус шоу'),
             segmented([['plan', 'По плану'], ['moved', 'Перенесено', 'moved'], ['cancelled', 'Отменено', 'cancel']], d.status, (v) => { d.status = v; renderStatusExtra(); }, 'Статус шоу')),
-          statusExtra),
+          statusExtra,
+          isNew ? h('div', { class: 'repeat' },
+            h('div', { class: 'field' }, h('span', { class: 'label' }, 'Повторять'),
+              segmented([['none', 'Нет'], ['1', 'Каждую неделю'], ['2', 'Раз в 2 недели']], repeat, (v) => { repeat = v; untilWrap.hidden = v === 'none'; renderRepeatInfo(); }, 'Повторять')),
+            untilWrap,
+            repeatInfo) : null),
         card(null, h('div', { class: 'card-head' }, h('h2', null, 'Состав'), castCount), castBox,
           h('p', { class: 'muted small' }, 'Порядок на сайте — как выбраны (цифра на карточке). Нового комика добавьте в разделе «Комики».')),
         card('Важно знать', impBox),
@@ -168,6 +252,7 @@ export function showEditView(app: App, id: string, query: URLSearchParams) {
         h('section', { class: 'card sticky' },
           toggle(d.published, (v) => { d.published = v; }, 'Показывать на сайте', (v) => v ? 'Шоу видно в афише' : 'Черновик — на сайте не видно'),
           saveBtn,
+          !isNew && d.published && d.status !== 'cancelled' ? featureBtn : null,
           !isNew && d.published ? h('a', { class: 'btn btn-block', href: `${app.siteUrl}/shows/${id}/`, target: '_blank', rel: 'noopener noreferrer' }, 'Открыть на сайте') : null,
           !isNew ? h('div', { class: 'row' },
             h('a', { class: 'btn grow', href: `#/shows/new?copy=${encodeURIComponent(id)}` }, 'Сделать копию'),
@@ -177,4 +262,5 @@ export function showEditView(app: App, id: string, query: URLSearchParams) {
             h('label', { class: 'btn grow', for: 'cover-file' }, icon('upload', 16), d.cover ? 'Заменить фото' : 'Загрузить фото'),
             h('button', { type: 'button', class: 'btn', onclick: () => { d.cover = undefined; markDirty(); renderCover(); } }, 'Убрать'))),
         !isNew ? historyCard(`src/content/events/${id}.md`, async () => { await app.reload(); app.go(`#/shows/${id}`); }) : null)));
+  return page;
 }

@@ -2,11 +2,12 @@
 import { getCollection } from 'astro:content';
 const photos = (await getCollection('gallery')).sort((a, b) => a.data.order - b.data.order);
 const shown = photos.slice(0, 7);
+const { title = 'Как у нас в клубе' } = Astro.props as { title?: string };
 ---
 <section id="photos" class="section">
   <div class="container">
     <div class="section-head">
-      <h2 class="display h2">Как у нас в клубе</h2>
+      <h2 class="display h2">{title}</h2>
       <p class="muted">Фото с наших вечеров</p>
     </div>
     <div class="mosaic">
@@ -109,7 +110,7 @@ const shown = photos.slice(0, 7);
 <style>
   .mosaic { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); grid-auto-rows: 210px; gap: 12px; }
   .tile { border: 0; padding: 0; cursor: zoom-in; font: inherit; width: 100%; height: 100%; }
-  .t0 { grid-column: span 2; grid-row: span 2; background: radial-gradient(ellipse 70% 70% at 70% 10%, rgba(150,95,255,.3), transparent 70%), var(--c-tile); }
+  .t0 { grid-column: span 2; grid-row: span 2; background: radial-gradient(ellipse 70% 70% at 70% 10%, rgba(var(--c-glow-rgb), .3), transparent 70%), var(--c-tile); }
   .t5 { grid-column: span 2; }
   .all {
     grid-column: span 2; border-radius: var(--r-m); border: 1px solid var(--c-line); background: var(--c-surface);

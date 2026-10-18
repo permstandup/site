@@ -186,7 +186,7 @@ const desc = d.seoDescription ?? `${d.title} — ${p.longWithWeekday}, ${p.time}
     display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 460px), 1fr));
     gap: 48px; align-items: start; padding-block: 24px 56px;
   }
-  .cover { aspect-ratio: 4 / 3; border-radius: var(--r-l); background: radial-gradient(ellipse 70% 60% at 75% 10%, rgba(150, 95, 255, .35), transparent 70%), var(--c-surface); }
+  .cover { aspect-ratio: 4 / 3; border-radius: var(--r-l); background: radial-gradient(ellipse 70% 60% at 75% 10%, rgba(var(--c-glow-rgb), .35), transparent 70%), var(--c-surface); }
   .cover.dim { opacity: .5; }
   .side { display: flex; flex-direction: column; gap: 20px; }
   .tags { display: flex; gap: 8px; flex-wrap: wrap; }

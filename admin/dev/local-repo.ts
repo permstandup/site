@@ -4,7 +4,7 @@
  */
 import { mkdir, readdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
-import { ConflictError, gitBlobSha, type Change, type FileEntry, type HistoryItem, type Repo } from '../server/repo';
+import { ConflictError, gitBlobSha, type Change, type DeployStatus, type FileEntry, type HistoryItem, type Repo } from '../server/repo';
 
 export class LocalRepo implements Repo {
   private log: Array<HistoryItem & { path: string; content: Buffer | null }> = [];
@@ -51,4 +51,6 @@ export class LocalRepo implements Repo {
   async readAt(path: string, commit: string) {
     return this.log.find((l) => l.path === path && l.sha === commit)?.content ?? null;
   }
+
+  async deployStatus(): Promise<DeployStatus> { return { state: 'local' }; }
 }

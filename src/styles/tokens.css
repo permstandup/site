@@ -15,7 +15,8 @@
   --c-accent: #a97bff;
   --c-accent-hover: #c3a0ff;
   --c-on-accent: #160c2a;
-  --c-glow: rgba(150, 95, 255, 0.24);
+  --c-glow-rgb: 150, 95, 255;
+  --c-glow: rgba(var(--c-glow-rgb), 0.24);
 
   --c-moved: #ffc56b;
   --c-on-moved: #2a1a00;
@@ -33,3 +34,9 @@
   --gutter: clamp(16px, 4vw, 40px);
   --section-y: clamp(40px, 6vw, 72px);
 }
+
+/* Цветовые темы (выбираются в админке: Настройки → Внешний вид).
+   Значения совпадают с shared/themes.ts — это проверяет тест. */
+:root[data-theme='coral'] { --c-accent: #ff7a6b; --c-accent-hover: #ff9d91; --c-on-accent: #2a0e0a; --c-glow-rgb: 255, 110, 90; }
+:root[data-theme='mint'] { --c-accent: #4fd1a5; --c-accent-hover: #7fe0bf; --c-on-accent: #06231a; --c-glow-rgb: 60, 200, 150; }
+:root[data-theme='sky'] { --c-accent: #5fb4ff; --c-accent-hover: #8ccbff; --c-on-accent: #08203a; --c-glow-rgb: 70, 150, 255; }

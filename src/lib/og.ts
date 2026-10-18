@@ -7,6 +7,7 @@ import { Resvg } from '@resvg/resvg-js';
 import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { settings } from './settings';
+import { THEME_VALUES } from '../../shared/themes';
 import logoSvg from '../assets/logo.svg?raw';
 
 const require = createRequire(import.meta.url);
@@ -29,7 +30,8 @@ const GOLOS = SUBSETS.map((s) => `Golos-${s}`).join(', ');
 type Node = { type: string; props: Record<string, unknown> & { children?: unknown; style?: Record<string, unknown> } };
 const h = (type: string, style: Record<string, unknown>, children?: unknown): Node => ({ type, props: { style, children } });
 
-const ACCENT = '#A97BFF';
+const THEME = THEME_VALUES[settings.theme];
+const ACCENT = THEME.accent;
 const LOGO = 'data:image/svg+xml;base64,' + Buffer.from(logoSvg).toString('base64');
 
 export interface OgInput {
@@ -50,7 +52,7 @@ export async function renderOg({ kicker, title, cta }: OgInput): Promise<Buffer>
     width: 1200, height: 630, display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
     padding: '64px 72px', color: '#F4F1EA', fontFamily: GOLOS,
     backgroundColor: '#0E1A1C',
-    backgroundImage: 'radial-gradient(ellipse 620px 520px at 88% 0%, rgba(150,95,255,0.42), rgba(14,26,28,0) 70%)',
+    backgroundImage: `radial-gradient(ellipse 620px 520px at 88% 0%, rgba(${THEME.glowRgb},0.42), rgba(14,26,28,0) 70%)`,
   }, [
     h('div', { display: 'flex', justifyContent: 'space-between', alignItems: 'center' }, [
       h('div', { display: 'flex', alignItems: 'center', gap: 16 }, [
@@ -66,7 +68,7 @@ export async function renderOg({ kicker, title, cta }: OgInput): Promise<Buffer>
     ]),
     h('div', { display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 28 }, [
       h('div', { color: '#D5DAD8' }, settings.address),
-      cta ? h('div', { backgroundColor: ACCENT, color: '#160C2A', fontWeight: 600, borderRadius: 999, padding: '14px 32px' }, cta) : h('div', {}, ''),
+      cta ? h('div', { backgroundColor: ACCENT, color: THEME.onAccent, fontWeight: 600, borderRadius: 999, padding: '14px 32px' }, cta) : h('div', {}, ''),
     ]),
   ]);
 

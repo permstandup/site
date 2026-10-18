@@ -11,6 +11,7 @@ import { showEditView } from './views/show-edit';
 import { comicsView } from './views/comics';
 import { photosView } from './views/photos';
 import { settingsView } from './views/settings';
+import { deployIndicator } from './status';
 
 // Защита от встраивания в чужую страницу (дублирует заголовок frame-ancestors)
 if (window.top !== window.self) { document.body.textContent = ''; throw new Error('framed'); }
@@ -49,7 +50,7 @@ function layout(active: string, body: HTMLElement): HTMLElement {
       h('a', { class: 'side-link muted', href: 'https://permstandup.ru/', target: '_blank', rel: 'noopener noreferrer' }, icon('ext', 18), h('span', null, 'Открыть сайт')),
       h('div', { class: 'who' }, h('span', null, session?.login ?? ''),
         h('button', { type: 'button', class: 'link-btn light', onclick: logout }, 'Выйти'))),
-    h('main', { class: 'main', id: 'main' }, body),
+    h('main', { class: 'main', id: 'main', tabindex: -1 }, h('div', { class: 'topbar' }, deployIndicator()), body),
     h('nav', { class: 'tabbar', 'aria-label': 'Разделы' }, NAV.map((n) => link(n, 'tab'))));
 }
 

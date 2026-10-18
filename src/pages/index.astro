@@ -8,11 +8,25 @@ import VideoGrid from '../components/VideoGrid.astro';
 import NextShowBar from '../components/NextShowBar.astro';
 import { getUpcomingEvents, nextOnSale, eventUrl } from '../lib/events';
 import { dateParts, parseLocal } from '../lib/dates';
-import { settings, isOn, openMicContact } from '../lib/settings';
+import { settings, isOn, openMicContact, seoFor } from '../lib/settings';
+import { HOME_BLOCKS } from '../../shared/schema';
 
 const upcoming = await getUpcomingEvents();
-const next = nextOnSale(upcoming);
+const home = settings.home;
+/** Топ-шоу недели (выбирается в админке). Отменённое или прошедшее — не показывается. */
+const featured = home.featured ? upcoming.find((e) => e.id === home.featured && e.data.status !== 'cancelled') : undefined;
+const next = featured ?? nextOnSale(upcoming);
 const nextP = next ? dateParts(parseLocal(next.data.start)) : undefined;
+const nextSoldOut = next?.data.seats === 'out';
+
+/** Порядок и заголовки блоков главной — из админки. Блоки, которых нет в списке, идут в конце. */
+type BlockId = (typeof HOME_BLOCKS)[number];
+const DEFAULT_TITLES: Record<BlockId, string> = { afisha: 'Афиша', facts: '', comics: 'Комики', video: 'Видео', photos: 'Как у нас в клубе', openmic: 'Хочешь на сцену?' };
+const SECTION_OF: Partial<Record<BlockId, Parameters<typeof isOn>[0]>> = { facts: 'facts', comics: 'comics', video: 'video', photos: 'photos', openmic: 'openmic' };
+const ordered = [...home.blocks, ...HOME_BLOCKS.filter((id) => !home.blocks.some((b) => b.id === id)).map((id) => ({ id, title: '' }))];
+const blocks = ordered
+  .filter((b) => !SECTION_OF[b.id] || isOn(SECTION_OF[b.id]!))
+  .map((b) => ({ id: b.id, title: b.title || DEFAULT_TITLES[b.id] }));
 const afisha = upcoming.slice(0, 6);
 const comics = isOn('comics')
   ? (await getCollection('comedians', ({ data }) => data.visible)).sort((a, b) => a.data.order - b.data.order).slice(0, 8)
@@ -28,7 +42,7 @@ const jsonLd = {
   sameAs: [settings.links.telegram, settings.links.vk],
 };
 ---
-<Base jsonLd={jsonLd}>
+<Base jsonLd={jsonLd} seo={seoFor('home')}>
   <section class="hero">
     <div class="container hero-grid">
       <div>
@@ -42,16 +56,22 @@ const jsonLd = {
       </div>
 
       {next && nextP ? (
-        <div class="card next">
-          <div class="eyebrow">Ближайшее шоу</div>
+        <div class:list={['card', 'next', { featured }]}>
+          {featured && next.data.cover && <img class="next-cover" src={next.data.cover} alt="" />}
+          <div class="eyebrow">{featured ? (home.featuredLabel || 'Главное шоу недели') : 'Ближайшее шоу'}</div>
           <a class="display next-title" href={eventUrl(next)}>{next.data.title}</a>
+          {featured && home.featuredText && <p class="next-text">{home.featuredText}</p>}
           <dl class="facts">
             <div><dt>Дата</dt><dd>{nextP.longWithWeekday}</dd></div>
             <div><dt>Начало</dt><dd>{nextP.time}</dd></div>
             {next.data.priceFrom && <div><dt>Билеты</dt><dd>от {next.data.priceFrom.toLocaleString('ru-RU')} ₽</dd></div>}
           </dl>
-          <p class="muted note">Сбор гостей за 30 минут. Рассадка свободная — компании лучше брать билеты одним заказом.</p>
-          <a class="btn btn-primary btn-lg" href={next.data.ticketUrl ?? eventUrl(next)}>Купить билет</a>
+          {!featured && <p class="muted note">Сбор гостей за 30 минут. Рассадка свободная — компании лучше брать билеты одним заказом.</p>}
+          {nextSoldOut ? (
+            <a class="btn btn-outline btn-lg" href={eventUrl(next)}>Билеты закончились — подробнее</a>
+          ) : (
+            <a class="btn btn-primary btn-lg" href={next.data.ticketUrl ?? eventUrl(next)}>Купить билет</a>
+          )}
         </div>
       ) : (
         <div class="card next">
@@ -64,20 +84,23 @@ const jsonLd = {
     </div>
   </section>
 
-  {afisha.length > 0 && (
+  {blocks.map((b) => {
+    switch (b.id) {
+      case 'afisha': return (
+        afisha.length > 0 && (
     <section class="section" id="afisha">
       <div class="container">
         <div class="section-head">
-          <h2 class="display h2">Афиша</h2>
+          <h2 class="display h2">{b.title}</h2>
           <a class="link-more" href="/afisha/">Вся афиша →</a>
         </div>
         <div class="rows">{afisha.map((e) => <EventRow event={e} />)}</div>
       </div>
     </section>
-  )}
-
-  {isOn('facts') && (
-    <section class="container facts-grid" aria-label="Коротко о клубе">
+        ));
+      case 'facts': return (
+        (
+    <section class="container facts-grid" aria-label={b.title || 'Коротко о клубе'}>
       {settings.facts.map((f) => (
         <div class="card fact">
           <div class="display fact-t">{f.title}</div>
@@ -85,29 +108,28 @@ const jsonLd = {
         </div>
       ))}
     </section>
-  )}
-
-  {comics.length > 0 && (
+        ));
+      case 'comics': return (
+        comics.length > 0 && (
     <section class="section" id="comics">
       <div class="container">
         <div class="section-head">
-          <h2 class="display h2">Комики</h2>
+          <h2 class="display h2">{b.title}</h2>
           <a class="link-more" href="/comics/">Все комики →</a>
         </div>
         <div class="comics">{comics.map((c) => <ComicCard comic={c} />)}</div>
       </div>
     </section>
-  )}
-
-  {isOn('video') && <VideoGrid />}
-  {isOn('photos') && <PhotoMosaic />}
-
-  {isOn('openmic') && (
+        ));
+      case 'video': return <VideoGrid title={b.title} />;
+      case 'photos': return <PhotoMosaic title={b.title} />;
+      case 'openmic': return (
+        (
     <section class="section" id="openmic">
       <div class="container">
         <div class="card cta">
           <div>
-            <h2 class="display h3">Хочешь на сцену?</h2>
+            <h2 class="display h3">{b.title}</h2>
             <p class="lead">{settings.texts.openMic}</p>
           </div>
           <div class="cta-actions">
@@ -117,7 +139,9 @@ const jsonLd = {
         </div>
       </div>
     </section>
-  )}
+        ));
+    }
+  })}
 
   <NextShowBar slot="after" event={next} />
 </Base>
@@ -126,7 +150,7 @@ const jsonLd = {
   .hero {
     background:
       radial-gradient(ellipse 620px 520px at 82% 8%, var(--c-glow), transparent 70%),
-      radial-gradient(ellipse 520px 440px at 6% 0%, rgba(150, 95, 255, .12), transparent 70%);
+      radial-gradient(ellipse 520px 440px at 6% 0%, rgba(var(--c-glow-rgb), .12), transparent 70%);
   }
   .hero-grid {
     display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
@@ -141,7 +165,14 @@ const jsonLd = {
   @media (max-width: 960px) { .big { font-size: clamp(72px, 21vw, 150px); } }
   .hero-lead { margin-top: 24px; max-width: 520px; }
 
-  .next { padding: clamp(22px, 3vw, 32px); display: flex; flex-direction: column; gap: 16px; border: 1px solid rgba(244, 241, 234, .12); }
+  .next { padding: clamp(22px, 3vw, 32px); display: flex; flex-direction: column; gap: 16px; border: 1px solid rgba(244, 241, 234, .12); overflow: hidden; }
+  .next.featured {
+    border: 2px solid var(--c-accent);
+    background: radial-gradient(ellipse 90% 70% at 100% 0%, rgba(var(--c-glow-rgb), .3), transparent 70%), var(--c-surface);
+  }
+  .next.featured .eyebrow { align-self: flex-start; background: var(--c-accent); color: var(--c-on-accent); border-radius: var(--r-pill); padding: 4px 12px; letter-spacing: .08em; }
+  .next-cover { margin: calc(-1 * clamp(22px, 3vw, 32px)) calc(-1 * clamp(22px, 3vw, 32px)) 4px; width: calc(100% + 2 * clamp(22px, 3vw, 32px)); max-width: none; aspect-ratio: 16 / 9; object-fit: cover; }
+  .next-text { color: var(--c-text-2); }
   .next-title { font-size: clamp(32px, 3.4vw, 44px); font-weight: 600; line-height: 1.05; text-decoration: none; }
   .facts { display: flex; flex-wrap: wrap; gap: 12px 28px; margin: 0; }
   .facts dt { color: var(--c-muted); font-size: 14px; }

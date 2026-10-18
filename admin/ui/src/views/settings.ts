@@ -1,8 +1,10 @@
-import { h, setChildren } from '../dom';
+import { h, icon, setChildren } from '../dom';
 import type { App } from '../main';
 import { api } from '../api';
-import type { Settings } from '../../../../shared/schema';
-import { busy, card, confirmBox, field, markClean, markDirty, showError, stringList, textArea, textInput, toast, toggle } from '../ui';
+import { HOME_BLOCKS, type Settings } from '../../../../shared/schema';
+import { THEME_VALUES } from '../../../../shared/themes';
+import { isPast } from './shows';
+import { busy, card, confirmBox, field, fmtShort, markClean, markDirty, segmented, showError, stringList, textArea, textInput, toast, toggle } from '../ui';
 import { historyCard } from './history';
 
 const SECTIONS: Array<[keyof Settings['sections'], string, string]> = [
@@ -48,6 +50,75 @@ export function settingsView(app: App, logout: () => void) {
     try { await api.logoutAll(); toast('Все сессии завершены'); logout(); } catch (e) { showError(e); }
   };
 
+  // ----- главная страница -----
+  const BLOCK_NAMES: Record<(typeof HOME_BLOCKS)[number], [string, string, keyof Settings['sections'] | null]> = {
+    afisha: ['Афиша', 'Афиша', null], facts: ['Факты о клубе', '(без заголовка)', 'facts'], comics: ['Комики', 'Комики', 'comics'],
+    video: ['Видео', 'Видео', 'video'], photos: ['Фото из клуба', 'Как у нас в клубе', 'photos'], openmic: ['Open mic', 'Хочешь на сцену?', 'openmic'],
+  };
+  for (const id of HOME_BLOCKS) if (!s.home.blocks.some((b) => b.id === id)) s.home.blocks.push({ id, title: '' });
+  const blocksBox = h('div', { class: 'blocks' });
+  const renderBlocks = () => setChildren(blocksBox, ...s.home.blocks.map((b, i) => {
+    const [name, def, sec] = BLOCK_NAMES[b.id];
+    const t = h('input', { type: 'text', value: b.title, maxlength: 60, placeholder: `Заголовок: ${def}`, 'aria-label': `Заголовок блока ${name}` });
+    t.addEventListener('input', () => { b.title = t.value; markDirty(); });
+    return h('div', { class: 'block-row' },
+      h('div', { class: 'updown' },
+        h('button', { type: 'button', class: 'icon-btn', 'aria-label': `Выше: ${name}`, disabled: i === 0, onclick: () => { [s.home.blocks[i - 1], s.home.blocks[i]] = [s.home.blocks[i], s.home.blocks[i - 1]]; markDirty(); renderBlocks(); } }, icon('up', 16)),
+        h('button', { type: 'button', class: 'icon-btn', 'aria-label': `Ниже: ${name}`, disabled: i === s.home.blocks.length - 1, onclick: () => { [s.home.blocks[i + 1], s.home.blocks[i]] = [s.home.blocks[i], s.home.blocks[i + 1]]; markDirty(); renderBlocks(); } }, icon('down', 16))),
+      h('span', { class: 'name' }, name, sec && !s.sections[sec] ? h('span', { class: 'off' }, 'выключен в «Разделах»') : null),
+      t);
+  }));
+  renderBlocks();
+
+  const upcoming = app.content.events.filter((e) => e.data.published && !isPast(e) && e.data.status !== 'cancelled')
+    .sort((a, b) => a.data.start.localeCompare(b.data.start));
+  const featSel = h('select', null,
+    h('option', { value: '', selected: !s.home.featured }, 'Нет — показывать ближайшее шоу'),
+    upcoming.map((e) => { const f = fmtShort(e.data.start); return h('option', { value: e.id, selected: s.home.featured === e.id }, `${f.date}, ${f.time} — ${e.data.title}`); }));
+  featSel.addEventListener('change', () => { s.home.featured = featSel.value; markDirty(); });
+  const featuredGone = s.home.featured && !upcoming.some((e) => e.id === s.home.featured);
+
+  // ----- внешний вид -----
+  const themesBox = h('div', { class: 'themes', role: 'radiogroup', 'aria-label': 'Цветовая тема' });
+  const renderThemes = () => setChildren(themesBox, ...(Object.keys(THEME_VALUES) as Array<keyof typeof THEME_VALUES>).map((k) => {
+    const t = THEME_VALUES[k];
+    const prev = h('span', { class: 'theme-prev' }, h('span', { class: 'b' }), h('span', { class: 't' }));
+    (prev.querySelector('.b') as HTMLElement).style.background = t.accent;
+    (prev.querySelector('.t') as HTMLElement).style.background = t.hover;
+    return h('button', { type: 'button', class: 'theme-opt', role: 'radio', 'aria-checked': String(s.theme === k), onclick: () => { s.theme = k; markDirty(); renderThemes(); renderBannerPrev(); } },
+      prev, h('span', { class: 'strong' }, t.label));
+  }));
+  renderThemes();
+
+  // ----- плашка -----
+  const bannerPrev = h('div', { class: 'banner-prev' });
+  const renderBannerPrev = () => {
+    bannerPrev.className = `banner-prev ${s.banner.tone}`;
+    const th = THEME_VALUES[s.theme];
+    bannerPrev.style.background = s.banner.tone === 'accent' ? th.accent : '#ffc56b';
+    bannerPrev.style.color = s.banner.tone === 'accent' ? th.onAccent : '#2a1a00';
+    setChildren(bannerPrev, s.banner.text || 'Текст плашки', s.banner.link ? ` · ${s.banner.linkLabel || 'Подробнее'} →` : '');
+  };
+  renderBannerPrev();
+  const untilIn = h('input', { type: 'date', value: s.banner.until });
+  untilIn.addEventListener('input', () => { s.banner.until = untilIn.value; markDirty(); });
+  const bannerText = textInput(str(() => s.banner.text, (v) => { s.banner.text = v; }), { max: 160, placeholder: 'Например: 31 декабря — новогодний стендап, билеты уже в продаже' });
+  bannerText.addEventListener('input', renderBannerPrev);
+  const bannerLabel = textInput(str(() => s.banner.linkLabel, (v) => { s.banner.linkLabel = v; }), { max: 40, placeholder: 'Подробнее' });
+  bannerLabel.addEventListener('input', renderBannerPrev);
+  const bannerLink = textInput(str(() => s.banner.link, (v) => { s.banner.link = v.trim(); }), { max: 300, placeholder: '/afisha/ или https://…' });
+  bannerLink.addEventListener('input', renderBannerPrev);
+
+  // ----- SEO -----
+  const SEO_PAGES: Array<[keyof Settings['seo']['pages'], string]> = [['home', 'Главная'], ['afisha', 'Афиша'], ['comics', 'Комики'], ['openmic', 'Open mic'], ['contacts', 'Контакты']];
+  const seoBox = h('div', { class: 'col' }, SEO_PAGES.map(([k, name]) => {
+    const pg = s.seo.pages[k];
+    return h('div', { class: 'faq-edit' },
+      h('div', { class: 'strong' }, name),
+      field('Заголовок в поиске', textInput(str(() => pg.title, (v) => { pg.title = v; }), { max: 70, placeholder: 'Пусто — по умолчанию' }), { counter: () => `${pg.title.length} / 70` }),
+      field('Описание в поиске', textArea(str(() => pg.description, (v) => { pg.description = v; }), { rows: 2, max: 200, placeholder: 'Пусто — по умолчанию' }), { counter: () => `${pg.description.length} / 200` }));
+  }));
+
   return h('div', { class: 'page' },
     h('div', { class: 'page-head' }, h('h1', null, 'Настройки клуба'), saveBtn),
     issuesBox,
@@ -56,6 +127,27 @@ export function settingsView(app: App, logout: () => void) {
       h('div', { class: 'sections' },
         toggle(true, () => undefined, 'Афиша', () => 'Всегда включена', true),
         SECTIONS.map(([k, name, hint]) => toggle(s.sections[k], (v) => { s.sections[k] = v; }, name, (v) => v ? hint : 'Выключен — на сайте не виден')))),
+    card('Главная страница',
+      h('div', { class: 'featured-box' },
+        field('Главное шоу недели', featSel, { hint: 'Выделяется крупно на первом экране и меткой в афише. После даты шоу выделение пропадёт само.' }),
+        featuredGone ? h('p', { class: 'small' }, 'Выбранное раньше шоу уже прошло или отменено — на сайте показывается ближайшее.') : null,
+        h('div', { class: 'grid2' },
+          field('Метка', textInput(str(() => s.home.featuredLabel, (v) => { s.home.featuredLabel = v; }), { max: 40, placeholder: 'Главное шоу недели' })),
+          field('Короткий текст (необязательно)', textInput(str(() => s.home.featuredText, (v) => { s.home.featuredText = v; }), { max: 200, placeholder: 'Почему стоит прийти' })))),
+      h('div', { class: 'field' }, h('span', { class: 'label' }, 'Порядок блоков и заголовки'),
+        h('span', { class: 'hint' }, 'Первый экран с ближайшим шоу всегда сверху. Пустой заголовок — стандартный.'), blocksBox)),
+    card('Внешний вид',
+      h('p', { class: 'muted small' }, 'Меняется акцентный цвет: кнопки, метки, подсветка. Все темы проверены на читаемость.'),
+      themesBox),
+    card('Плашка-объявление',
+      toggle(s.banner.enabled, (v) => { s.banner.enabled = v; }, 'Показывать плашку над шапкой сайта', (v) => v ? 'Видна на всех страницах' : 'Выключена'),
+      bannerPrev,
+      field('Текст', bannerText),
+      h('div', { class: 'grid2' }, field('Ссылка (необязательно)', bannerLink), field('Текст ссылки', bannerLabel)),
+      h('div', { class: 'grid2' },
+        field('Показывать до (включительно)', untilIn, { hint: 'Пусто — пока не выключите. После даты плашка пропадёт сама.' }),
+        h('div', { class: 'field' }, h('span', { class: 'label' }, 'Цвет'),
+          segmented([['accent', 'Акцентный'], ['warning', 'Предупреждение']], s.banner.tone, (v) => { s.banner.tone = v; renderBannerPrev(); }, 'Цвет плашки')))),
     h('div', { class: 'grid2 top' },
       h('div', { class: 'col' },
         card('Контакты',
@@ -92,5 +184,9 @@ export function settingsView(app: App, logout: () => void) {
       h('div', { class: 'field' }, h('span', { class: 'label' }, 'Правила'),
         stringList({ get: () => s.openMic.rules, set: (v) => { s.openMic.rules = v; } }, { max: 12, addLabel: '+ Правило', maxLen: 200 })),
       h('div', { class: 'field' }, h('span', { class: 'label' }, 'Частые вопросы'), faqBox)),
+    card('SEO — как сайт выглядит в Яндексе',
+      field('Код подтверждения Яндекс Вебмастера', textInput(str(() => s.seo.yandexVerification, (v) => { s.seo.yandexVerification = v.trim(); }), { max: 16, placeholder: 'например 1a2b3c4d5e6f7a8b' }),
+        { hint: 'Из meta-тега yandex-verification в Вебмастере — только сам код из 16 символов.' }),
+      seoBox),
     historyCard('src/content/settings.json', async () => { await app.reload(); app.go('#/settings'); }));
 }

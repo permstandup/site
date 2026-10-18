@@ -10,6 +10,12 @@ export interface FileEntry { path: string; sha: string; text: string | null }
 export interface Change { path: string; content: Buffer | null } // null — удалить
 export interface Author { name: string; email: string }
 export interface HistoryItem { sha: string; message: string; date: string; author: string }
+/** Состояние выкладки сайта: последний коммит и последняя сборка GitHub Actions */
+export interface DeployStatus {
+  state: 'deployed' | 'building' | 'failed' | 'waiting' | 'unknown' | 'local';
+  head?: string;
+  updatedAt?: string;
+}
 
 export class ConflictError extends Error {
   constructor(public path: string) { super(`Файл ${path} уже изменили`); }
@@ -23,6 +29,7 @@ export interface Repo {
   commit(changes: Change[], message: string, author: Author, expect: Record<string, string | null>): Promise<string>;
   history(path: string, limit: number): Promise<HistoryItem[]>;
   readAt(path: string, commit: string): Promise<Buffer | null>;
+  deployStatus(): Promise<DeployStatus>;
 }
 
 /** sha, который git даёт содержимому файла — чтобы ловить одновременные правки */
@@ -120,6 +127,23 @@ export class GitHubRepo implements Repo {
       `${this.base}/commits?path=${encodeURIComponent(path)}&sha=${this.cfg.repo.branch}&per_page=${limit}`,
     );
     return list.map((c) => ({ sha: c.sha, message: c.commit.message.split('\n')[0], date: c.commit.author.date, author: c.commit.author.name }));
+  }
+
+  /** Требует у GitHub App право Actions: Read-only (только чтение) */
+  async deployStatus(): Promise<DeployStatus> {
+    try {
+      const ref = await this.ghJson<{ object: { sha: string } }>(`${this.base}/git/ref/heads/${this.cfg.repo.branch}`);
+      const head = ref.object.sha;
+      const runs = await this.ghJson<{ workflow_runs: Array<{ head_sha: string; status: string; conclusion: string | null; updated_at: string; event: string }> }>(
+        `${this.base}/actions/runs?branch=${this.cfg.repo.branch}&per_page=10`,
+      );
+      const forHead = runs.workflow_runs.find((r) => r.head_sha === head);
+      if (!forHead) return { state: 'waiting', head };
+      if (forHead.status !== 'completed') return { state: 'building', head, updatedAt: forHead.updated_at };
+      return { state: forHead.conclusion === 'success' ? 'deployed' : 'failed', head, updatedAt: forHead.updated_at };
+    } catch {
+      return { state: 'unknown' };
+    }
   }
 
   async commit(changes: Change[], message: string, author: Author, expect: Record<string, string | null>): Promise<string> {

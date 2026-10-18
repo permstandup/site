@@ -1,7 +1,13 @@
 import raw from '../content/settings.json';
+import { settingsSchema, type Settings } from '../../shared/schema';
 
-export type Settings = typeof raw;
-export const settings: Settings = raw;
+/** Настройки проверяются при сборке теми же правилами, что и в админке; недостающие поля получают значения по умолчанию. */
+const parsed = settingsSchema.safeParse(raw);
+if (!parsed.success) {
+  throw new Error('src/content/settings.json не прошёл проверку:\n' + parsed.error.issues.map((i) => `${i.path.join('.')}: ${i.message}`).join('\n'));
+}
+export type { Settings };
+export const settings: Settings = parsed.data;
 
 export type SectionKey = keyof Settings['sections'];
 export const isOn = (key: SectionKey) => settings.sections[key] !== false;
@@ -23,4 +29,21 @@ export function navItems() {
     { href: '/open-mic/', label: 'Open mic', on: isOn('openmic') },
     { href: '/contacts/', label: 'Контакты', on: true },
   ].filter((i) => i.on);
+}
+
+/** Сегодняшняя дата по Перми (ГГГГ-ММ-ДД) — на момент сборки сайта */
+export const permToday = () => new Date(Date.now() + 5 * 3600_000).toISOString().slice(0, 10);
+
+/** Плашка-объявление: показывается, если включена и срок не прошёл */
+export function activeBanner() {
+  const b = settings.banner;
+  if (!b.enabled || !b.text.trim()) return null;
+  if (b.until && b.until < permToday()) return null;
+  return b;
+}
+
+/** SEO-заголовок и описание страницы из настроек (пустые — берутся значения по умолчанию) */
+export function seoFor(page: keyof Settings['seo']['pages']) {
+  const p = settings.seo.pages[page];
+  return { title: p.title || undefined, description: p.description || undefined };
 }

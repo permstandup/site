@@ -24,7 +24,7 @@ GitHub → аккаунт permstandup → Settings → Developer settings → Gi
 - Callback URL: `https://admin.permstandup.ru/api/auth/callback`
 - Request user authorization (OAuth) during installation — **выключить**; Expire user authorization tokens — **включить**
 - Webhook — **выкл**
-- Repository permissions: **Contents: Read and write**, Metadata: Read-only. **Всё остальное — No access** (в т. ч. Workflows, Actions, Administration).
+- Repository permissions: **Contents: Read and write**, **Actions: Read-only** (только чтобы показывать статус публикации), Metadata: Read-only. **Всё остальное — No access** (в т. ч. Workflows, Administration, Secrets).
 - Account permissions: ничего
 - Where can this app be installed: **Only on this account**
 

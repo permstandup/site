@@ -1,0 +1,25 @@
+---
+/** Плашка-объявление над шапкой. Включается в админке: Настройки → Плашка. Сама пропадает после даты «до». */
+import { activeBanner } from '../lib/settings';
+const b = activeBanner();
+const external = b?.link?.startsWith('https://');
+---
+{b && (
+  <div class:list={['banner', `tone-${b.tone}`]} role="note">
+    <div class="container inner">
+      <span class="text">{b.text}</span>
+      {b.link && (
+        <a class="link" href={b.link} rel={external ? 'noopener' : undefined}>{b.linkLabel || 'Подробнее'} →</a>
+      )}
+    </div>
+  </div>
+)}
+
+<style>
+  .banner { font-size: 15px; font-weight: 500; }
+  .tone-accent { background: var(--c-accent); color: var(--c-on-accent); }
+  .tone-warning { background: var(--c-moved); color: var(--c-on-moved); }
+  .inner { display: flex; gap: 8px 16px; align-items: center; justify-content: center; flex-wrap: wrap; padding-block: 10px; text-align: center; }
+  .link { color: inherit; font-weight: 700; white-space: nowrap; min-height: 32px; display: inline-flex; align-items: center; }
+  .link:hover { color: inherit; opacity: .8; }
+</style>

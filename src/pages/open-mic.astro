@@ -2,7 +2,7 @@
 import Base from '../layouts/Base.astro';
 import EventRow from '../components/EventRow.astro';
 import { getUpcomingEvents } from '../lib/events';
-import { settings, isOn, openMicContact } from '../lib/settings';
+import { settings, isOn, openMicContact, seoFor } from '../lib/settings';
 
 const om = settings.openMic;
 const mics = (await getUpcomingEvents()).filter((e) => e.data.format === 'openmic').slice(0, 4);
@@ -22,6 +22,7 @@ const faqLd = {
   activeNav="/open-mic/"
   jsonLd={faqLd.mainEntity.length ? faqLd : undefined}
   noindex={!isOn('openmic')}
+  seo={seoFor('openmic')}
 >
   <section class="hero">
     <div class="container hero-grid">
@@ -89,7 +90,7 @@ const faqLd = {
 </Base>
 
 <style>
-  .hero { background: radial-gradient(ellipse 600px 460px at 85% 0%, rgba(150, 95, 255, .26), transparent 70%); }
+  .hero { background: radial-gradient(ellipse 600px 460px at 85% 0%, rgba(var(--c-glow-rgb), .26), transparent 70%); }
   .hero-grid {
     display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 440px), 1fr));
     gap: 48px; align-items: end; padding-block: clamp(48px, 7vw, 72px) clamp(40px, 6vw, 64px);

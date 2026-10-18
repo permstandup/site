@@ -2,13 +2,13 @@
 import { getCollection } from 'astro:content';
 import Base from '../../layouts/Base.astro';
 import ComicCard from '../../components/ComicCard.astro';
-import { settings, isOn } from '../../lib/settings';
+import { settings, isOn, seoFor } from '../../lib/settings';
 
 const all = (await getCollection('comedians', ({ data }) => data.visible)).sort((a, b) => a.data.order - b.data.order);
 const residents = all.filter((c) => c.data.role === 'resident');
 const guests = all.filter((c) => c.data.role === 'guest');
 ---
-<Base title="Комики" description={settings.comicsLead} activeNav="/comics/" noindex={!isOn('comics')}>
+<Base title="Комики" description={settings.comicsLead} activeNav="/comics/" noindex={!isOn('comics')} seo={seoFor('comics')}>
   <section class="container head">
     <h1 class="display h1">Комики</h1>
     <p class="lead">{settings.comicsLead}</p>
@@ -55,7 +55,7 @@ const guests = all.filter((c) => c.data.role === 'guest');
   .last { padding-bottom: 96px; }
   .cta {
     padding: clamp(24px, 4vw, 40px); display: flex; justify-content: space-between; align-items: center; gap: 24px; flex-wrap: wrap;
-    background: radial-gradient(ellipse 50% 120% at 90% 0%, rgba(150, 95, 255, .28), transparent 70%), var(--c-surface);
+    background: radial-gradient(ellipse 50% 120% at 90% 0%, rgba(var(--c-glow-rgb), .28), transparent 70%), var(--c-surface);
   }
   @media (max-width: 760px) {
     .grid-l, .grid-s { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }

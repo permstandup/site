@@ -1,7 +1,7 @@
 ---
 import Base from '../layouts/Base.astro';
 import MapBlock from '../components/MapBlock.astro';
-import { settings, telHref } from '../lib/settings';
+import { settings, telHref, seoFor } from '../lib/settings';
 
 const q = encodeURIComponent(`${settings.city}, ${settings.address}`);
 const facts = settings.facts.slice(0, 4);
@@ -10,6 +10,7 @@ const facts = settings.facts.slice(0, 4);
   title="О клубе и контакты"
   description={`${settings.name}: ${settings.city}, ${settings.address}. Телефон ${settings.phone}, Telegram и ВКонтакте, где купить билеты.`}
   activeNav="/contacts/"
+  seo={seoFor('contacts')}
 >
   <section class="container about">
     <div>

@@ -2,6 +2,7 @@
 import type { EventEntry } from '../lib/events';
 import { FORMAT_LABEL, eventUrl } from '../lib/events';
 import { dateParts, parseLocal } from '../lib/dates';
+import { settings } from '../lib/settings';
 
 interface Props { event: EventEntry }
 const { event } = Astro.props;
@@ -11,6 +12,7 @@ const p = dateParts(start);
 const cancelled = d.status === 'cancelled';
 const moved = d.status === 'moved';
 const soldOut = d.seats === 'out';
+const top = settings.home.featured === event.id && !cancelled;
 const movedFrom = moved && d.movedFrom ? dateParts(parseLocal(d.movedFrom)) : undefined;
 const dow = start.toLocaleDateString('en-US', { weekday: 'short', timeZone: 'Asia/Yekaterinburg' });
 const weekend = ['Fri', 'Sat', 'Sun'].includes(dow);
@@ -29,6 +31,7 @@ const meta = [p.time, FORMAT_LABEL[d.format], d.age, d.priceFrom ? `от ${d.pri
   <div class="info">
     <h3 class="title">
       <a href={eventUrl(event)}>{d.title}</a>
+      {top && <span class="tag tag-top">{settings.home.featuredLabel || 'Топ-шоу'}</span>}
       {moved && movedFrom && <span class="tag tag-moved">Перенесено с {movedFrom.day} {movedFrom.month}</span>}
       {cancelled && <span class="tag tag-cancel">Отменено</span>}
       {!cancelled && d.seats === 'few' && <span class="tag tag-few">Мало мест</span>}
@@ -58,6 +61,7 @@ const meta = [p.time, FORMAT_LABEL[d.format], d.age, d.priceFrom ? `от ${d.pri
   .mon { font-size: 15px; color: var(--c-muted); text-transform: uppercase; letter-spacing: .08em; margin-top: 4px; }
   .title { font-size: 22px; font-weight: 600; font-family: var(--f-body); display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; }
   .title a { text-decoration: none; }
+  .tag-top { background: var(--c-accent); color: var(--c-on-accent); }
   .title a::after { content: ''; position: absolute; inset: 0; }
   .info { position: relative; }
   .meta { font-size: 15px; color: var(--c-muted); }

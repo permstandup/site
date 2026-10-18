@@ -2,7 +2,7 @@
 import Base from '../layouts/Base.astro';
 import EventRow from '../components/EventRow.astro';
 import { getUpcomingEvents, groupByWeek } from '../lib/events';
-import { settings } from '../lib/settings';
+import { settings, seoFor } from '../lib/settings';
 
 const upcoming = await getUpcomingEvents();
 const groups = groupByWeek(upcoming);
@@ -14,7 +14,7 @@ const filters = [
   { id: 'weekend', label: 'Только выходные' },
 ];
 ---
-<Base title="Афиша" description="Афиша стендап-концертов, открытых микрофонов и проверочных концертов в Пермском стендап клубе." activeNav="/afisha/">
+<Base title="Афиша" description="Афиша стендап-концертов, открытых микрофонов и проверочных концертов в Пермском стендап клубе." activeNav="/afisha/" seo={seoFor('afisha')}>
   <section class="container head">
     <h1 class="display h1">Афиша</h1>
     <p class="lead intro">Стендап с пятницы по воскресенье, проверочные концерты и открытые микрофоны по будням. Сбор гостей за 30 минут, рассадка свободная.</p>
@@ -88,7 +88,7 @@ const filters = [
   .empty {
     border: 1px dashed rgba(244, 241, 234, .25); border-radius: 24px; padding: clamp(40px, 6vw, 64px) 24px;
     display: flex; flex-direction: column; align-items: center; gap: 16px; text-align: center;
-    background: radial-gradient(ellipse 50% 80% at 50% 0%, rgba(150, 95, 255, .18), transparent 70%);
+    background: radial-gradient(ellipse 50% 80% at 50% 0%, rgba(var(--c-glow-rgb), .18), transparent 70%);
   }
   .empty .lead { max-width: 520px; }
   .empty-actions { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; margin-top: 8px; }

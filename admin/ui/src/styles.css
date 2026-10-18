@@ -79,6 +79,7 @@ input:invalid:not(:placeholder-shown) { border-color: var(--danger); }
 .btn-sm { min-height: 38px; padding: 6px 12px; font-size: 14px; font-weight: 500; }
 .btn-lg { min-height: 52px; font-size: 17px; }
 .btn-block { width: 100%; }
+.btn-primary-soft { background: var(--primary-soft); border-color: var(--primary); color: var(--primary-2); }
 .link-btn { background: none; border: 0; padding: 8px 0; min-height: 40px; color: var(--primary-2); font-weight: 600; cursor: pointer; align-self: flex-start; }
 .link-btn.light { color: var(--side-muted); min-height: 32px; padding: 0; }
 .link-btn.danger { color: var(--danger); }
@@ -187,6 +188,37 @@ dialog.confirm:not([open]) { display: none; }
 dialog.confirm::backdrop { background: rgba(14, 26, 28, .5); }
 dialog.confirm .row { justify-content: flex-end; }
 
+/* ---------- статус публикации ---------- */
+.topbar { display: flex; justify-content: flex-end; margin: -16px 0 12px; max-width: 1240px; }
+.deploy { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); background: #fff; border: 1px solid var(--line); border-radius: 999px; padding: 5px 12px; }
+.deploy .dot { width: 8px; height: 8px; border-radius: 50%; background: #c9c6be; flex: none; }
+.deploy-ok .dot { background: #2e9a4f; }
+.deploy-busy .dot { background: #e0a020; animation: pulse 1.2s ease-in-out infinite; }
+.deploy-err { color: var(--danger); border-color: var(--danger-line); }
+.deploy-err .dot { background: var(--danger); }
+@keyframes pulse { 50% { opacity: .3; } }
+
+/* ---------- настройки: темы, блоки ---------- */
+.themes { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+.theme-opt { display: flex; flex-direction: column; gap: 10px; border: 1px solid var(--line); border-radius: 12px; padding: 12px; background: #fff; cursor: pointer; text-align: left; }
+.theme-opt[aria-checked='true'] { border: 2px solid var(--primary); padding: 11px; }
+.theme-prev { height: 64px; border-radius: 8px; background: #0e1a1c; display: flex; align-items: flex-end; gap: 6px; padding: 10px; }
+.theme-prev .b { height: 22px; width: 56px; border-radius: 999px; }
+.theme-prev .t { height: 8px; width: 40px; border-radius: 4px; }
+.blocks { display: flex; flex-direction: column; gap: 8px; }
+.block-row { display: flex; gap: 10px; align-items: center; border: 1px solid var(--line-2); border-radius: var(--r-s); padding: 8px 10px; }
+.block-row .name { width: 150px; flex: none; font-weight: 600; }
+.block-row .off { color: var(--muted); font-weight: 400; font-size: 13px; display: block; }
+.block-row input { min-height: 38px; padding: 6px 10px; }
+.featured-box { border: 2px solid var(--primary); background: var(--primary-soft); border-radius: 12px; padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+.banner-prev { border-radius: 8px; padding: 10px 14px; text-align: center; font-weight: 500; }
+.banner-prev.accent { background: #a97bff; color: #160c2a; }
+.banner-prev.warning { background: #ffc56b; color: #2a1a00; }
+.import { display: flex; gap: 8px; align-items: flex-end; }
+.import .field { flex: 1; }
+.repeat { border-top: 1px solid var(--line-2); padding-top: 16px; display: flex; flex-direction: column; gap: 12px; }
+.pill.top { background: var(--primary); color: #fff; margin-left: 8px; vertical-align: 2px; font-size: 12px; }
+
 /* ---------- адаптив ---------- */
 @media (max-width: 1180px) {
   .rows .row { grid-template-columns: 110px minmax(0, 1fr) 120px 90px 170px; }
@@ -197,6 +229,12 @@ dialog.confirm .row { justify-content: flex-end; }
 @media (max-width: 900px) {
   .side { display: none; }
   .main { padding: 16px 16px 112px; }
+  .topbar { margin: 0 0 12px; justify-content: flex-start; }
+  .themes { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .block-row { flex-wrap: wrap; }
+  .block-row .name { width: auto; flex: 1; }
+  .block-row input { order: 3; width: 100%; }
+  .import { flex-direction: column; align-items: stretch; }
   .tabbar { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); position: fixed; left: 0; right: 0; bottom: 0; z-index: 20; background: #fff; border-top: 1px solid var(--line); padding: 6px 4px calc(6px + env(safe-area-inset-bottom)); }
   .tab { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 6px 2px; font-size: 12px; color: var(--muted); text-decoration: none; min-height: 52px; text-align: center; }
   .tab[aria-current='page'] { color: var(--primary); font-weight: 600; }

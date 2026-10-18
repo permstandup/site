@@ -11,6 +11,7 @@ import {
   parseEntry, serializeEntry, settingsSchema, type Kind,
 } from './content';
 import { SLUG_RE, eventSchema, comedianSchema } from '../../shared/schema';
+import { checkQticketsUrl, fetchQtickets, type Imported } from './qtickets';
 
 export interface Deps {
   cfg: Config;
@@ -18,11 +19,14 @@ export interface Deps {
   identify: (code: string, verifier: string) => Promise<{ id: number; login: string; twoFactor: boolean | undefined } | null>;
   assets: Map<string, { type: string; body: Buffer }>;
   log?: (entry: Record<string, unknown>) => void;
+  /** Чтение страницы Qtickets (в тестах подменяется) */
+  importQtickets?: (url: string) => Promise<Imported | null>;
 }
 
 const MAX_BODY = 4_000_000;
 const loginLimiter = new RateLimiter(20, 10 * 60_000);
 const writeLimiter = new RateLimiter(60, 60_000);
+const importLimiter = new RateLimiter(20, 10 * 60_000);
 const readLimiter = new RateLimiter(300, 60_000);
 
 // ---------- эпоха сессий ----------
@@ -114,6 +118,50 @@ async function route(req: Req, d: Deps): Promise<Res> {
   }
 
   if (p === '/api/content' && req.method === 'GET') return json(200, await loadAll(repo));
+
+  if (p === '/api/deploy-status' && req.method === 'GET') return json(200, await repo.deployStatus());
+
+  // ----- данные из Qtickets -----
+  if (p === '/api/import/qtickets' && req.method === 'POST') {
+    const body = readJson(req) as { url?: unknown } | undefined;
+    const url = typeof body?.url === 'string' ? body.url.trim() : '';
+    if (!checkQticketsUrl(url)) return error(400, 'Нужна ссылка на страницу шоу в Qtickets, например https://perm.qtickets.events/123456-nazvanie');
+    if (!importLimiter.allow(`q:${s.uid}`)) return error(429, 'Слишком много запросов к Qtickets. Подождите несколько минут.');
+    const data = await (d.importQtickets ?? fetchQtickets)(url).catch(() => null);
+    if (!data || (!data.title && !data.start)) return error(502, 'Не получилось прочитать страницу Qtickets — заполните поля вручную');
+    audit('import_qtickets', { url: checkQticketsUrl(url)!.toString() });
+    return json(200, data);
+  }
+
+  // ----- серия шоу (повторяющееся): один коммит на все -----
+  if (p === '/api/events-batch' && req.method === 'PUT') {
+    const parsed = z.object({
+      items: z.array(z.object({ id: z.string().regex(SLUG_RE).max(80), data: z.unknown(), body: z.unknown() }).strict()).min(1).max(52),
+    }).strict().safeParse(readJson(req));
+    if (!parsed.success) return error(400, 'Неверный запрос');
+    const ids = parsed.data.items.map((i) => i.id);
+    if (new Set(ids).size !== ids.length) return error(400, 'Повторяются даты');
+    const known = new Set((await repo.readDir(PATHS.comediansDir)).map((f) => f.path.split('/').pop()!.replace(/\.md$/, '')));
+    const changes: Array<{ path: string; content: Buffer }> = [];
+    const expect: Record<string, null> = {};
+    for (const [n, it] of parsed.data.items.entries()) {
+      const check = eventInput.safeParse({ data: it.data, body: it.body });
+      if (!check.success) return error(422, `Шоу №${n + 1}: проверьте поля`, { issues: issues(check.error) });
+      const data = check.data.data as Record<string, unknown>;
+      const missing = (data.comedians as string[]).filter((c) => !known.has(c));
+      if (missing.length) return error(422, 'Проверьте поля', { issues: [{ path: 'comedians', message: `Нет комиков: ${missing.join(', ')}` }] });
+      delete data.movedFrom; delete data.cancelReason;
+      const path = entryPath('events', it.id);
+      changes.push({ path, content: Buffer.from(serializeEntry(data, check.data.body)) });
+      expect[path] = null;
+    }
+    const title = String((parsed.data.items[0].data as { title?: unknown }).title ?? '');
+    return conflictSafe(async () => {
+      const sha = await repo.commit(changes, `Админка: серия шоу «${title.slice(0, 60)}» — ${changes.length} шт. (${s.login})`, author(s), expect);
+      audit('create_series', { count: changes.length });
+      return json(200, { ok: true, commit: sha, ids });
+    });
+  }
 
   // ----- шоу и комики -----
   const em = /^\/api\/entries\/(events|comedians)\/([a-z0-9-]{1,80})$/.exec(p);
@@ -284,9 +332,12 @@ async function loadAll(repo: Repo) {
     const f = await repo.readFile(path);
     return f ? { sha: f.sha, data: JSON.parse(f.content.toString('utf8')) } : { sha: null, data: null };
   };
-  const [events, comedians, gallery, videos, settings] = await Promise.all([
+  const [events, comedians, gallery, videos, rawSettings] = await Promise.all([
     entries('events'), entries('comedians'), jsonFile(PATHS.gallery), jsonFile(PATHS.videos), jsonFile(PATHS.settings),
   ]);
+  // Новые поля настроек получают значения по умолчанию
+  const ps = settingsSchema.safeParse(rawSettings.data);
+  const settings = { sha: rawSettings.sha, data: ps.success ? ps.data : rawSettings.data };
   return { events, comedians, gallery, videos, settings };
 }
 

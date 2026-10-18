@@ -49,6 +49,7 @@
   ],
   "openMic": {
     "schedule": "по будням",
+    "contactNote": "Ведущие open mic меняются — кнопка всегда ведёт к тому, кто ведёт сейчас.",
     "steps": [
       {
         "title": "Напиши ведущему",
@@ -86,8 +87,7 @@
         "q": "Как попасть в основной состав?",
         "a": "[Ответ]"
       }
-    ],
-    "contactNote": "Ведущие open mic меняются — кнопка всегда ведёт к тому, кто ведёт сейчас."
+    ]
   },
   "about": {
     "paragraphs": [
@@ -96,5 +96,70 @@
     ],
     "requisites": ""
   },
-  "comicsLead": "Резиденты клуба и гости — комики из Перми и других городов России."
+  "comicsLead": "Резиденты клуба и гости — комики из Перми и других городов России.",
+  "theme": "violet",
+  "home": {
+    "featured": "",
+    "featuredLabel": "Главное шоу недели",
+    "featuredText": "",
+    "blocks": [
+      {
+        "id": "afisha",
+        "title": ""
+      },
+      {
+        "id": "facts",
+        "title": ""
+      },
+      {
+        "id": "comics",
+        "title": ""
+      },
+      {
+        "id": "video",
+        "title": ""
+      },
+      {
+        "id": "photos",
+        "title": ""
+      },
+      {
+        "id": "openmic",
+        "title": ""
+      }
+    ]
+  },
+  "banner": {
+    "enabled": false,
+    "text": "",
+    "link": "",
+    "linkLabel": "",
+    "until": "",
+    "tone": "accent"
+  },
+  "seo": {
+    "yandexVerification": "",
+    "pages": {
+      "home": {
+        "title": "",
+        "description": ""
+      },
+      "afisha": {
+        "title": "",
+        "description": ""
+      },
+      "comics": {
+        "title": "",
+        "description": ""
+      },
+      "openmic": {
+        "title": "",
+        "description": ""
+      },
+      "contacts": {
+        "title": "",
+        "description": ""
+      }
+    }
+  }
 }
