@@ -7,6 +7,7 @@ import { Resvg } from '@resvg/resvg-js';
 import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { settings } from './settings';
+import logoSvg from '../assets/logo.svg?raw';
 
 const require = createRequire(import.meta.url);
 const font = (pkg: string, file: string) =>
@@ -29,6 +30,7 @@ type Node = { type: string; props: Record<string, unknown> & { children?: unknow
 const h = (type: string, style: Record<string, unknown>, children?: unknown): Node => ({ type, props: { style, children } });
 
 const ACCENT = '#A97BFF';
+const LOGO = 'data:image/svg+xml;base64,' + Buffer.from(logoSvg).toString('base64');
 
 export interface OgInput {
   /** Верхняя строка акцентным цветом: дата или подзаголовок */
@@ -52,10 +54,7 @@ export async function renderOg({ kicker, title, cta }: OgInput): Promise<Buffer>
   }, [
     h('div', { display: 'flex', justifyContent: 'space-between', alignItems: 'center' }, [
       h('div', { display: 'flex', alignItems: 'center', gap: 16 }, [
-        h('div', {
-          width: 64, height: 64, borderRadius: 32, border: '3px solid #F4F1EA', display: 'flex', flexDirection: 'column',
-          alignItems: 'center', justifyContent: 'center', fontFamily: OSWALD, fontSize: 12, fontWeight: 600, lineHeight: 1.05,
-        }, [h('div', {}, 'STAND'), h('div', {}, 'UP'), h('div', {}, 'PERM')]),
+        { type: 'img', props: { src: LOGO, width: 72, height: 72 } },
         h('div', { display: 'flex', flexDirection: 'column', fontFamily: OSWALD, fontWeight: 600, fontSize: 26, letterSpacing: 1.5, lineHeight: 1.1 },
           [h('div', {}, 'ПЕРМСКИЙ'), h('div', {}, 'СТЕНДАП КЛУБ')]),
       ]),

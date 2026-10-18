@@ -35,6 +35,8 @@ const og = new URL(ogImage ?? '/og/default.png', Astro.site).toString();
     {noindex && <meta name="robots" content="noindex" />}
     <meta name="theme-color" content="#0e1a1c" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <meta property="og:type" content="website" />
     <meta property="og:locale" content="ru_RU" />
     <meta property="og:site_name" content={settings.name} />
