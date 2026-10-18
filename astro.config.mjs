@@ -6,6 +6,8 @@ export default defineConfig({
   site: 'https://permstandup.ru',
   trailingSlash: 'ignore',
   build: { format: 'directory' },
+  // Локальный сервер слушает 127.0.0.1: так он открывается и по localhost, и по 127.0.0.1 (в т.ч. с VPN)
+  server: { host: '127.0.0.1', port: 4321 },
   integrations: [sitemap()],
   security: {
     // Content-Security-Policy в <meta>: браузер выполнит только скрипты и стили самого сайта
