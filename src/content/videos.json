@@ -1,5 +1,20 @@
 [
-  { "id": "video-1", "title": "[Название ролика]", "url": "https://vk.ru/standupperm", "comedian": "[Комик]", "order": 1 },
-  { "id": "video-2", "title": "[Название ролика]", "url": "https://vk.ru/standupperm", "comedian": "[Комик]", "order": 2 },
-  { "id": "video-3", "title": "[Название ролика]", "url": "https://vk.ru/standupperm", "comedian": "[Комик]", "order": 3 }
+  {
+    "id": "video-1",
+    "title": "Открытие Пермского стендап-клуба. 1 серия: Стройка",
+    "url": "https://vkvideo.ru/video-68020737_456239822",
+    "order": 1
+  },
+  {
+    "id": "video-2",
+    "title": "ОТКРЫТИЕ ПЕРМСКОГО СТЕНДАП-КЛУБА. 2 серия: Завершаем ремонт",
+    "url": "https://vkvideo.ru/video-68020737_456239823",
+    "order": 2
+  },
+  {
+    "id": "video-3",
+    "title": "ОТКРЫТИЕ ПЕРМСКОГО СТЕНДАП-КЛУБА. 3 СЕРИЯ: Мы открылись",
+    "url": "https://vkvideo.ru/video-68020737_456239826",
+    "order": 3
+  }
 ]

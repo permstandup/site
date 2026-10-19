@@ -1,8 +1,9 @@
 ---
 name: Артем Дылдин
 role: resident
-tagline: "[короткое био в одну строку]"
+photo: /uploads/2026-10-19-ffn2owl3ade4.jpg
 order: 1
 visible: true
 ---
-[Био до 300 знаков: откуда, сколько лет в стендапе, о чём шутит.]
+Информация в процессе дополнения
+https://dyldin.tilda.ws/

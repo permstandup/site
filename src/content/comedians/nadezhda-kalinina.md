@@ -1,7 +1,8 @@
 ---
 name: Надежда Калинина
 role: resident
+photo: /uploads/2026-10-19-wrcim8ujnfvc.jpg
 order: 70
-visible: false
+visible: true
 ---
-
+Информация в процессе дополнения

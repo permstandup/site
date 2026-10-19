@@ -6,6 +6,6 @@ age: 18+
 priceFrom: 500
 seats: ok
 status: plan
-published: false
+published: true
 ---
 Шесть опытных комиков расскажут вам свои новые шутки.
