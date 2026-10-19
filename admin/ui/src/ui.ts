@@ -147,9 +147,42 @@ export function renderIssues(box: HTMLElement, issues: Issue[]) {
 }
 
 // ---------- несохранённые изменения ----------
+// Пока есть несохранённые правки, внизу экрана висит панель с кнопкой «Сохранить» —
+// не нужно листать к кнопке. Она нажимает настоящую кнопку сохранения того блока,
+// который правили последним (например, «Видео» на странице фото). Ctrl+S — то же самое.
 let dirty = false;
-export function markDirty() { dirty = true; }
-export function markClean() { dirty = false; }
+let lastScope: Element | null = null;
+const barBtn = h('button', { type: 'button', class: 'btn btn-primary' }, 'Сохранить');
+const saveBar = h('div', { class: 'savebar', role: 'region', 'aria-label': 'Несохранённые изменения', hidden: true },
+  h('span', { class: 'savebar-text' }, 'Есть несохранённые изменения'), barBtn);
+const targetSave = (): HTMLButtonElement | null => {
+  const inScope = lastScope?.isConnected ? lastScope.querySelector<HTMLButtonElement>('[data-save]') : null;
+  return inScope ?? document.querySelector<HTMLButtonElement>('.main [data-save]:not([data-save-scope] [data-save])');
+};
+function triggerSave() {
+  const b = targetSave();
+  if (!b || b.disabled) return;
+  b.hidden = false;
+  b.click();
+}
+barBtn.addEventListener('click', triggerSave);
+const remember = (e: Event) => {
+  const t = e.target;
+  if (t instanceof Element && !saveBar.contains(t)) lastScope = t.closest('[data-save-scope]');
+};
+document.addEventListener('input', remember, true);
+document.addEventListener('change', remember, true);
+document.addEventListener('click', remember, true);
+document.addEventListener('keydown', (e) => {
+  if ((e.ctrlKey || e.metaKey) && !e.altKey && e.code === 'KeyS') { e.preventDefault(); if (dirty) triggerSave(); }
+});
+const syncBar = () => {
+  if (!saveBar.isConnected) document.body.append(saveBar);
+  saveBar.hidden = !dirty;
+  document.body.classList.toggle('has-savebar', dirty);
+};
+export function markDirty() { dirty = true; syncBar(); }
+export function markClean() { dirty = false; lastScope = null; syncBar(); }
 export const isDirty = () => dirty;
 window.addEventListener('beforeunload', (e) => { if (dirty) e.preventDefault(); });
 

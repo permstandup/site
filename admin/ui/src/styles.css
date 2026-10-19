@@ -272,3 +272,20 @@ dialog.confirm .row { justify-content: flex-end; }
 }
 @media (max-width: 900px) and (min-width: 520px) { .grid3 { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+
+/* Панель «Сохранить» внизу экрана — появляется только при несохранённых правках */
+.savebar { position: fixed; left: 50%; transform: translateX(-50%); bottom: 20px; z-index: 40; display: flex; align-items: center; gap: 16px;
+  background: var(--side); color: var(--side-text); padding: 10px 10px 10px 20px; border-radius: 999px; box-shadow: 0 10px 30px rgba(0,0,0,.25);
+  max-width: calc(100vw - 32px); }
+.savebar[hidden] { display: none; }
+.savebar .btn { min-height: 44px; }
+.savebar-text { font-weight: 500; white-space: nowrap; }
+body.has-savebar .main { padding-bottom: 120px; }
+body.has-savebar .toast { bottom: 96px; }
+@media (min-width: 901px) { .savebar { left: calc(50% + 124px); } }
+@media (max-width: 900px) {
+  .savebar { bottom: calc(78px + env(safe-area-inset-bottom)); padding-left: 16px; gap: 10px; }
+  .savebar-text { font-size: 14px; }
+  body.has-savebar .main { padding-bottom: 180px; }
+  body.has-savebar .toast { bottom: 150px; }
+}

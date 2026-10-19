@@ -214,7 +214,7 @@ export function showEditView(app: App, id: string, query: URLSearchParams, prefi
       app.go(`#/shows/${targetId}`);
     } catch (e) { showError(e, issuesBox); }
   };
-  const saveBtn = h('button', { type: 'button', class: 'btn btn-primary btn-block' }, 'Сохранить');
+  const saveBtn = h('button', { type: 'button', class: 'btn btn-primary btn-block', 'data-save': '' }, 'Сохранить');
   saveBtn.addEventListener('click', () => busy(saveBtn, save));
 
   const del = async () => {

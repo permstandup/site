@@ -22,7 +22,7 @@ export function settingsView(app: App, logout: () => void) {
   const issuesBox = h('div');
   const str = (get: () => string, set: (v: string) => void) => ({ get, set: (v: string | undefined) => set(v ?? '') });
 
-  const saveBtn = h('button', { type: 'button', class: 'btn btn-primary' }, 'Сохранить');
+  const saveBtn = h('button', { type: 'button', class: 'btn btn-primary', 'data-save': '' }, 'Сохранить');
   saveBtn.addEventListener('click', () => busy(saveBtn, async () => {
     setChildren(issuesBox, );
     s.importantDefault = s.importantDefault.map((x) => x.trim()).filter(Boolean);
@@ -154,7 +154,7 @@ export function settingsView(app: App, logout: () => void) {
       venueStatus.textContent = `Загружаю ${n + 1} из ${files.length}…`;
       try { s.venue.photos.push((await api.upload(await prepareImage(f))).src); markDirty(); renderVenuePhotos(); } catch (e) { showError(e); }
     }
-    venueStatus.textContent = files.length ? 'Готово — нажмите «Сохранить» вверху страницы' : '';
+    venueStatus.textContent = files.length ? 'Готово — нажмите «Сохранить»' : '';
   });
 
   return h('div', { class: 'page' },

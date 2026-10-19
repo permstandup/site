@@ -16,7 +16,7 @@ export function comicsView(app: App, selected?: string) {
 
   // ----- список с порядком -----
   let order = list.map((c) => c.id);
-  const orderBtn = h('button', { type: 'button', class: 'btn btn-sm', hidden: true }, 'Сохранить порядок');
+  const orderBtn = h('button', { type: 'button', class: 'btn btn-sm', hidden: true, 'data-save': '' }, 'Сохранить порядок');
   const listBox = h('div', { class: 'clist' });
   const renderList = () => {
     setChildren(listBox, ...order.map((id, i) => {
@@ -79,7 +79,7 @@ export function comicsView(app: App, selected?: string) {
       await app.reload(); app.go(`#/comics/${id}`);
     } catch (e) { showError(e, issuesBox); }
   };
-  const saveBtn = h('button', { type: 'button', class: 'btn btn-primary' }, 'Сохранить');
+  const saveBtn = h('button', { type: 'button', class: 'btn btn-primary', 'data-save': '' }, 'Сохранить');
   saveBtn.addEventListener('click', () => busy(saveBtn, save));
   const del = async () => {
     if (!cur || !(await confirmBox(`Удалить комика «${cur.data.name}»? Если он просто временно не выступает — лучше скройте его.`, 'Удалить', true))) return;
@@ -93,7 +93,7 @@ export function comicsView(app: App, selected?: string) {
     h('div', { class: 'page-head' }, h('h1', null, 'Комики'),
       h('a', { class: 'btn btn-primary', href: '#/comics/new' }, icon('plus', 18), h('span', { class: 'hide-sm' }, 'Новый комик'))),
     h('div', { class: 'comics-grid' },
-      h('section', { class: 'card flush' },
+      h('section', { class: 'card flush', 'data-save-scope': '' },
         h('div', { class: 'card-head pad' }, h('span', { class: 'muted small' }, 'Порядок на сайте — стрелками'), orderBtn),
         list.length ? listBox : h('p', { class: 'muted pad' }, 'Комиков пока нет.')),
       h('div', { class: 'col' },

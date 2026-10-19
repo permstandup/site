@@ -60,7 +60,7 @@ function photosBlock(app: App) {
     status.textContent = files.length ? 'Готово — нажмите «Сохранить», чтобы фото появились на сайте' : '';
   });
 
-  const saveBtn = h('button', { type: 'button', class: 'btn btn-primary' }, 'Сохранить');
+  const saveBtn = h('button', { type: 'button', class: 'btn btn-primary', 'data-save': '' }, 'Сохранить');
   saveBtn.addEventListener('click', () => busy(saveBtn, async () => {
     setChildren(issuesBox, );
     const data = items.map((p, i) => ({ ...p, order: i + 1, caption: p.caption.trim() || 'Фото из клуба', alt: (p.alt || p.caption).trim() || 'Фото из клуба' }));
@@ -103,13 +103,15 @@ function videosBlock(app: App) {
     }), items.length < 50 ? h('button', { type: 'button', class: 'link-btn', onclick: () => { items.push({ id: rid().replace('p-', 'v-'), title: '', url: '', order: 100 }); markDirty(); render(); } }, '+ Добавить видео') : null);
   };
   render();
-  const saveBtn = h('button', { type: 'button', class: 'btn btn-primary' }, 'Сохранить видео');
+  const saveBtn = h('button', { type: 'button', class: 'btn btn-primary', 'data-save': '' }, 'Сохранить видео');
   saveBtn.addEventListener('click', () => busy(saveBtn, async () => {
     setChildren(issuesBox, );
     const data = items.map((v, i) => ({ ...v, order: i + 1 }));
     try { await api.saveList('videos', data, app.content.videos.sha); markClean(); toast('Сохранено'); await app.reload(); app.go('#/photos'); } catch (e) { showError(e, issuesBox); }
   }));
-  return card(null,
+  const scoped = card(null,
     h('div', { class: 'card-head' }, h('div', null, h('h2', null, 'Видео на главной'), h('div', { class: 'muted small' }, 'Первые 6. Только VK Видео, Rutube или YouTube.')), saveBtn),
     issuesBox, box);
+  scoped.setAttribute('data-save-scope', '');
+  return scoped;
 }
