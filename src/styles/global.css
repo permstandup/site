@@ -108,6 +108,9 @@ p { margin: 0; }
 ::view-transition-group(poster) { animation-duration: .38s; animation-timing-function: cubic-bezier(.2, .7, .2, 1); }
 .site-header { view-transition-name: site-header; }
 @keyframes vt-out { to { opacity: 0; } }
+/* То же для браузеров без переходов между страницами (Firefox): см. public/vt.js */
+.no-vt main, .no-vt footer { animation: vt-in .28s cubic-bezier(.2, .7, .2, 1) backwards; }
+.no-vt.vt-leaving main, .no-vt.vt-leaving footer { opacity: 0; transition: opacity .15s ease-in; }
 @keyframes vt-in { from { opacity: 0; transform: translateY(8px); } }
 
 /* Появление блоков при прокрутке (класс ставит скрипт; без скрипта всё видно сразу) */
