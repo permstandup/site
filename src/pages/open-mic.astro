@@ -76,7 +76,7 @@ const faqLd = {
         <li class="card step">
           <div class="display num">{String(i + 1).padStart(2, '0')}</div>
           <div class="st">{s.title}</div>
-          {(() => { const line = [s.text.trim(), i === om.steps.length - 1 ? settings.address : ''].filter(Boolean).join(' · '); return line && <div class="muted">{line}</div>; })()}
+          {s.text.trim() && <div class="muted">{s.text}</div>}
         </li>
       ))}
     </ol>
