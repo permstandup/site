@@ -2,7 +2,7 @@
 import { getCollection } from 'astro:content';
 import { settings } from '../lib/settings';
 
-type Item = { title: string; url: string; comedian?: string };
+type Item = { title: string; url: string; comedian?: string; cover?: string };
 interface Props { items?: Item[]; title?: string; more?: boolean }
 const { items, title = 'Видео', more = true } = Astro.props;
 const videos: Item[] = items ?? (await getCollection('videos'))
@@ -23,7 +23,8 @@ const sourceOf = (url: string) =>
           const yt = src === 'youtube';
           return (
             <a class="video" href={v.url} target={yt ? '_blank' : undefined} rel={yt ? 'noopener' : undefined}>
-              <div class="ph frame">
+              <div class:list={['ph', 'frame', { 'has-cover': v.cover }]}>
+                {v.cover && <img src={v.cover} alt="" loading="lazy" decoding="async" />}
                 <span class:list={['play', { ghost: yt }]} aria-hidden="true">
                   <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5l11 7-11 7z"></path></svg>
                 </span>
@@ -41,12 +42,16 @@ const sourceOf = (url: string) =>
 <style>
   .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: 24px; }
   .video { text-decoration: none; color: var(--c-text); display: flex; flex-direction: column; gap: 8px; }
-  .frame { aspect-ratio: 16 / 9; background: var(--c-surface); }
+  .frame { aspect-ratio: 16 / 9; background: var(--c-surface); position: relative; overflow: hidden; }
+  .frame img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: transform .3s; }
+  .frame.has-cover::after { content: ''; position: absolute; inset: 0; background: rgba(0, 0, 0, .18); }
+  .frame .play { position: relative; z-index: 1; }
+  .video:hover .frame img { transform: scale(1.03); }
   .play {
     width: 64px; height: 64px; border-radius: 50%; background: var(--c-accent); color: var(--c-on-accent);
     display: flex; align-items: center; justify-content: center;
   }
-  .play.ghost { background: transparent; border: 2px solid var(--c-text); color: var(--c-text); }
+  .play.ghost { background: rgba(0, 0, 0, .35); border: 2px solid var(--c-text); color: var(--c-text); }
   .t { font-weight: 600; }
   .s { font-size: 14px; }
   .video:hover .play { background: var(--c-accent-hover); }

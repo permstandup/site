@@ -125,6 +125,8 @@ export const videoItemSchema = z.object({
   title: line(120).min(1),
   url: videoUrl,
   comedian: line(80).optional(),
+  /** Превью — своя картинка (кадр из ролика). Картинки VK на сайт не тянем: это чужие запросы и cookie. */
+  cover: uploadPath.optional(),
   order: z.number().int().min(0).max(10_000).default(100),
 }).strict();
 export const videosSchema = z.array(videoItemSchema).max(50)

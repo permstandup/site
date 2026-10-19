@@ -95,7 +95,28 @@ function videosBlock(app: App) {
       u.addEventListener('input', () => { v.url = u.value.trim(); markDirty(); });
       const c = h('input', { type: 'text', value: v.comedian ?? '', maxlength: 80, placeholder: 'Комик (точно как в разделе «Комики»)' });
       c.addEventListener('input', () => { v.comedian = c.value || undefined; markDirty(); });
+      // Превью: своя картинка (скриншот кадра). Пусто — на сайте тёмная плашка с кнопкой.
+      const fid = `vcover-${v.id}`;
+      const fileIn = h('input', { type: 'file', accept: 'image/*', class: 'visually-hidden', id: fid });
+      const thumb = h('div', { class: 'vthumb' });
+      const renderThumb = () => {
+        const url = imageUrl(v.cover);
+        setChildren(thumb, url ? h('img', { src: url, alt: '' }) : h('span', { class: 'muted small' }, 'Нет превью'));
+      };
+      renderThumb();
+      fileIn.addEventListener('change', async () => {
+        const f = fileIn.files?.[0]; fileIn.value = '';
+        if (!f) return;
+        setChildren(thumb, h('span', { class: 'muted small' }, 'Загружаю…'));
+        try { v.cover = (await api.upload(await prepareImage(f))).src; markDirty(); toast('Превью загружено — не забудьте сохранить'); } catch (e) { showError(e); }
+        renderThumb();
+      });
+      const coverCol = h('div', { class: 'vcover' }, thumb, fileIn,
+        h('div', { class: 'row' },
+          h('label', { class: 'btn btn-sm', for: fid }, icon('upload', 16), v.cover ? 'Заменить' : 'Превью'),
+          v.cover ? h('button', { type: 'button', class: 'btn btn-sm', onclick: () => { v.cover = undefined; markDirty(); render(); } }, 'Убрать') : null));
       return h('div', { class: 'vrow' },
+        coverCol,
         h('div', { class: 'grid3 grow' }, field('Название', t), field('Ссылка', u), field('Комик', c)),
         h('div', { class: 'row' },
           h('button', { type: 'button', class: 'icon-btn', 'aria-label': 'Выше', disabled: i === 0, onclick: () => { [items[i - 1], items[i]] = [items[i], items[i - 1]]; markDirty(); render(); } }, icon('up', 16)),
@@ -110,7 +131,7 @@ function videosBlock(app: App) {
     try { await api.saveList('videos', data, app.content.videos.sha); markClean(); toast('Сохранено'); await app.reload(); app.go('#/photos'); } catch (e) { showError(e, issuesBox); }
   }));
   const scoped = card(null,
-    h('div', { class: 'card-head' }, h('div', null, h('h2', null, 'Видео на главной'), h('div', { class: 'muted small' }, 'Первые 6. Только VK Видео, Rutube или YouTube.')), saveBtn),
+    h('div', { class: 'card-head' }, h('div', null, h('h2', null, 'Видео на главной'), h('div', { class: 'muted small' }, 'Первые 6. Только VK Видео, Rutube или YouTube. Превью — скриншот кадра из ролика, горизонтальный.')), saveBtn),
     issuesBox, box);
   scoped.setAttribute('data-save-scope', '');
   return scoped;

@@ -290,3 +290,7 @@ body.has-savebar .toast { bottom: 96px; }
   body.has-savebar .toast { bottom: 150px; }
 }
 .warn-text { color: #a8590a; font-weight: 600; }
+.vcover { display: flex; flex-direction: column; gap: 8px; width: 168px; flex: none; }
+.vthumb { aspect-ratio: 16 / 9; border-radius: 8px; background: var(--seg); display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.vthumb img { width: 100%; height: 100%; object-fit: cover; }
+@media (max-width: 900px) { .vrow { flex-wrap: wrap; } .vcover { width: 100%; } }
