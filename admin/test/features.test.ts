@@ -158,6 +158,15 @@ test('тексты сайта: только известные надписи, �
   assert.equal(ok.status, 200, String(ok.body));
 });
 
+test('комик: сайт необязателен, только https', async () => {
+  const { comedianSchema } = await import('../../shared/schema');
+  const base = { name: 'Тест' };
+  assert.ok(comedianSchema.safeParse(base).success);
+  assert.ok(comedianSchema.safeParse({ ...base, website: 'https://dyldin.tilda.ws/' }).success);
+  assert.ok(!comedianSchema.safeParse({ ...base, website: 'http://example.com' }).success);
+  assert.ok(!comedianSchema.safeParse({ ...base, website: 'javascript:alert(1)' }).success);
+});
+
 // ---------- open mic: ведущий; страница «Мероприятия» ----------
 
 test('open mic: ведущий должен быть из списка комиков, ссылка — только Telegram/VK', async () => {

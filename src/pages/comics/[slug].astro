@@ -61,10 +61,11 @@ const jsonLd = {
         {rest.length ? <><span class="n1">{first}</span><span class="n2">{rest.join(' ')}</span></> : <span class="n2">{c.name}</span>}
       </h1>
       <div class="lead bio">{bioParas.map((p) => <p>{p}</p>)}</div>
-      {(c.telegram || c.vk) && (
+      {(c.telegram || c.vk || c.website) && (
         <div class="links">
           {c.telegram && <a class="btn btn-outline" href={c.telegram}>Telegram</a>}
           {c.vk && <a class="btn btn-outline" href={c.vk}>ВКонтакте</a>}
+          {c.website && <a class="btn btn-outline" href={c.website} rel="noopener">{t('comic.website')}</a>}
         </div>
       )}
     </div>

@@ -111,6 +111,7 @@ export function comicsView(app: App, selected?: string) {
           h('div', { class: 'grid2' },
             field('Telegram', textInput({ get: () => d.telegram, set: (v) => { d.telegram = v; } }, { type: 'url', placeholder: 'https://t.me/…', max: 300 })),
             field('ВКонтакте', textInput({ get: () => d.vk, set: (v) => { d.vk = v; } }, { type: 'url', placeholder: 'https://vk.ru/…', max: 300 }))),
+          field('Сайт (необязательно)', textInput({ get: () => d.website, set: (v) => { d.website = v?.trim() || undefined; } }, { type: 'url', placeholder: 'https://…', max: 500 }), { hint: 'Личная страница комика. Пусто — кнопки «Сайт» не будет.' }),
           field('Видео — ссылки на VK Видео, Rutube или YouTube, по одной в строке', videosArea),
           h('div', { class: 'card-foot' },
             toggle(d.visible, (v) => { d.visible = v; }, 'Показывать на сайте', (v) => v ? 'Виден в списке и на главной' : 'Скрыт — данные сохранятся'),

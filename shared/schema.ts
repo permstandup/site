@@ -101,6 +101,8 @@ export const comedianFields = {
   photo: uploadPath.optional(),
   telegram: telegramUrl.optional(),
   vk: vkUrl.optional(),
+  /** Личный сайт комика — необязательно, только https */
+  website: httpsUrl.optional(),
   videos: z.array(videoUrl).max(10).default([]),
   order: z.number().int().min(0).max(10_000).default(100),
   visible: z.boolean().default(true),
