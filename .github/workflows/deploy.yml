@@ -3,15 +3,9 @@
 # (чтобы прошедшие шоу уходили из афиши) и вручную (Actions → Run workflow).
 name: Публикация сайта
 
+# Пока сайт живёт на GitHub Pages (см. pages.yml), эта публикация выключена:
+# запускается только вручную. При переезде в Yandex Cloud — вернуть push и schedule.
 on:
-  push:
-    branches: [main]
-    paths-ignore:
-      - 'admin/**'
-      - '**/*.md'
-      - 'admin-state.json'
-  schedule:
-    - cron: '5 19 * * *' # 19:05 UTC = 00:05 по Перми
   workflow_dispatch:
 
 # Сборке нужен только доступ на чтение репозитория

@@ -1,5 +1,24 @@
 # Запуск сайта и админки
 
+## Сейчас: бесплатно на GitHub Pages
+
+Пока нет бюджета на Yandex Cloud, сайт публикуется на GitHub Pages (`.github/workflows/pages.yml`), а правки делаются в локальной админке на компьютере и отправляются кнопкой «Опубликовать на сайт». Публикация в Yandex Cloud (`deploy.yml`) выключена и запускается только вручную.
+
+1. **Репозиторий — публичный** (бесплатные Pages только для публичных): github.com/permstandup/site → Settings → General → Danger Zone → Change visibility → Public. Секретов в репозитории нет.
+2. **Pages из Actions:** Settings → Pages → Build and deployment → Source: **GitHub Actions**.
+3. **Свой домен:** Settings → Pages → Custom domain: `permstandup.ru` → Save (файл `public/CNAME` уже есть).
+4. **Подтверждение домена** (чтобы никто другой не мог занять его на GitHub): аватар → Settings → Pages → Add a domain → `permstandup.ru` → GitHub покажет TXT-запись → добавить её в Reg.ru → Verify.
+5. **DNS в Reg.ru** (Домены → permstandup.ru → DNS-серверы и управление зоной), DNS-серверы — Reg.ru:
+   - `@` A → `185.199.108.153`, `185.199.109.153`, `185.199.110.153`, `185.199.111.153` (четыре записи; старые A/AAAA для `@` удалить);
+   - `www` CNAME → `permstandup.github.io.`
+6. Когда GitHub покажет «DNS check successful» → включить **Enforce HTTPS**.
+7. Actions → «Публикация сайта (GitHub Pages)» → Run workflow. Дальше сайт собирается сам после каждой публикации и каждую ночь.
+
+**Ограничения:** HTTP-заголовки безопасности на Pages не настраиваются (CSP задана внутри страниц); онлайн-админки нет — правки только с компьютера; из России GitHub иногда работает с перебоями. При переезде в Yandex Cloud — этапы ниже, затем в Reg.ru вернуть DNS на Yandex и включить `deploy.yml`.
+
+---
+
+
 Делается один раз, по этапам, вместе с Claude. **Секреты (ключи, пароли, коды) вводятся только в интерфейсах GitHub и Yandex Cloud — пересылать их никому не нужно, Claude тоже.**
 
 - Этап А — сайт на permstandup.ru (Object Storage + автосборка)

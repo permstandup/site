@@ -7,3 +7,4 @@ dist/
 Thumbs.db
 admin/dist/
 admin/server/assets.generated.ts
+admin/.local/

@@ -52,6 +52,11 @@ export const api = {
   restore: (path: string, commit: string) => call<{ commit: string }>('POST', '/api/restore', { path, commit }),
   logout: () => call<{ ok: true }>('POST', '/api/auth/logout', {}),
   logoutAll: () => call<{ ok: true }>('POST', '/api/auth/logout-all', {}),
+  // Только локальная админка: публикация на сайт через GitHub
+  publishStatus: () => call<{ connected: boolean; changes: Array<{ path: string; kind: 'added' | 'changed' | 'deleted' }> }>('GET', '/api/local/publish'),
+  publish: () => call<{ commit: string; count: number }>('POST', '/api/local/publish', {}),
+  saveToken: (token: string) => call<{ ok: true }>('PUT', '/api/local/token', { token }),
+  forgetToken: () => call<{ ok: true }>('DELETE', '/api/local/token', {}),
 };
 
 /** Адрес картинки для показа в админке: через API (видно и ещё не выложенные на сайт файлы) */

@@ -11,8 +11,10 @@ import { readFile, readdir } from 'node:fs/promises';
 import { join, extname, resolve } from 'node:path';
 import { randomBytes } from 'node:crypto';
 import { handle, type Deps } from '../server/routes';
-import { issueSession } from '../server/auth';
-import { error, securityHeaders, type Req } from '../server/http';
+import { issueSession, readSession } from '../server/auth';
+import { csrfOk } from '../server/guards';
+import { Publisher, PublishError } from './publish';
+import { error, json, securityHeaders, type Req, type Res } from '../server/http';
 import type { Config } from '../server/config';
 import { LocalRepo } from './local-repo';
 
@@ -47,6 +49,31 @@ const cfg: Config = {
   require2fa: true,
 };
 
+const publisher = new Publisher(ROOT);
+
+/** «Опубликовать на сайт»: только с действующей локальной сессией и с защитой от CSRF */
+async function publishRoute(req: Req): Promise<Res> {
+  if (!csrfOk(req, cfg.origin)) return error(403, 'Запрос отклонён');
+  const s = readSession(cfg, req, 0);
+  if (!s) return error(401, 'Нужно войти');
+  let body: Record<string, unknown> = {};
+  if (req.method !== 'GET') { try { body = JSON.parse(req.body.toString('utf8') || '{}'); } catch { return error(400, 'Неверный запрос'); } }
+  try {
+    if (req.path === '/api/local/publish' && req.method === 'GET') return json(200, await publisher.status());
+    if (req.path === '/api/local/publish' && req.method === 'POST') return json(200, await publisher.publish(s.login));
+    if (req.path === '/api/local/token' && req.method === 'PUT') {
+      const r = await publisher.saveToken(typeof body.token === 'string' ? body.token : '');
+      return r.ok ? json(200, { ok: true }) : error(422, r.error);
+    }
+    if (req.path === '/api/local/token' && req.method === 'DELETE') { await publisher.forgetToken(); return json(200, { ok: true }); }
+    return error(404, 'Не найдено');
+  } catch (e) {
+    if (e instanceof PublishError) return error(e.needsToken ? 412 : 502, e.message);
+    console.error('[publish]', e);
+    return error(502, 'Не удалось связаться с GitHub. Проверьте интернет и попробуйте ещё раз.');
+  }
+}
+
 const deps: Deps = {
   cfg,
   repo: new LocalRepo(ROOT),
@@ -72,6 +99,8 @@ createServer(async (r, w) => {
   if (req.path === '/api/auth/login') {
     // Локальный вход: сразу выдаём сессию тестовому администратору
     res = { status: 302, headers: { ...securityHeaders(cfg.siteUrl), Location: '/#/shows' }, cookies: [issueSession(cfg, 1, 'local-admin', 0)], body: '' };
+  } else if (req.path.startsWith('/api/local/')) {
+    { const r = await publishRoute(req); res = { ...r, headers: { ...securityHeaders(cfg.siteUrl), ...r.headers } }; }
   } else if (req.path === '/api/auth/logout-all') {
     res = { ...error(400, 'В локальном режиме не нужно'), headers: securityHeaders(cfg.siteUrl) };
   } else {

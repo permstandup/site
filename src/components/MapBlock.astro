@@ -9,12 +9,13 @@ const shownAddress = address ?? `${settings.city}, ${settings.address}`;
 const q = encodeURIComponent(Astro.props.mapQuery ?? `${settings.city}, ${settings.address}`);
 ---
 <div class:list={['map-wrap', { tall }]}>
-  <iframe
-    class="map"
-    title={`Карта: ${shownAddress}`}
-    src={`https://yandex.ru/map-widget/v1/?text=${q}&z=16`}
-    loading="lazy"
-  ></iframe>
+  {/* Карта Яндекса загружается только по нажатию: до этого Яндекс ничего не получает о посетителе */}
+  <div class="map map-ph" data-map-src={`https://yandex.ru/map-widget/v1/?text=${q}&z=16`} data-map-title={`Карта: ${shownAddress}`}>
+    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11z"></path><circle cx="12" cy="10" r="2.5"></circle></svg>
+    <div class="map-addr">{shownAddress}</div>
+    <button type="button" class="btn btn-outline" data-map-show>{t('map.show')}</button>
+    <div class="muted map-note">{t('map.note')}</div>
+  </div>
   <div class="addr">
     <slot>
       <div class="display addr-t">{title}</div>
@@ -28,12 +29,30 @@ const q = encodeURIComponent(Astro.props.mapQuery ?? `${settings.city}, ${settin
   </div>
 </div>
 
+<script>
+  document.querySelectorAll<HTMLElement>('[data-map-src]').forEach((ph) => {
+    ph.querySelector('[data-map-show]')?.addEventListener('click', () => {
+      const f = document.createElement('iframe');
+      f.className = 'map';
+      f.src = ph.dataset.mapSrc!;
+      f.title = ph.dataset.mapTitle ?? 'Карта';
+      ph.replaceWith(f);
+    });
+  });
+</script>
+
 <style>
   .map-wrap { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 380px), 1fr)); gap: 24px; }
-  .map { width: 100%; min-height: 320px; height: 100%; border: 0; border-radius: var(--r-l); background: var(--c-surface); }
+  .map, :global(iframe.map) { width: 100%; min-height: 320px; height: 100%; border: 0; border-radius: var(--r-l); background: var(--c-surface); }
+  .map-ph {
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 24px; text-align: center;
+    background: radial-gradient(ellipse 70% 60% at 50% 0%, rgba(var(--c-glow-rgb), .18), transparent 70%), var(--c-surface); color: var(--c-accent-hover);
+  }
+  .map-addr { color: var(--c-text); font-weight: 600; }
+  .map-note { font-size: 13px; max-width: 320px; }
   .tall .map { min-height: 400px; }
   .addr { display: flex; flex-direction: column; gap: 10px; justify-content: center; }
   .addr-t { font-size: 30px; font-weight: 600; }
   .addr-a { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 8px; }
-  @media (max-width: 640px) { .map, .tall .map { min-height: 280px; height: 280px; } }
+  @media (max-width: 640px) { .map, .tall .map, :global(iframe.map) { min-height: 280px; height: 280px; } }
 </style>
