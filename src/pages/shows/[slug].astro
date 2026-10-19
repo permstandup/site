@@ -3,7 +3,7 @@ import Base from '../../layouts/Base.astro';
 import ComicCard from '../../components/ComicCard.astro';
 import NextShowBar from '../../components/NextShowBar.astro';
 import MapBlock from '../../components/MapBlock.astro';
-import { getUpcomingEvents, getEventComedians, eventUrl, openMicSignup, FORMAT_LABEL, type EventEntry } from '../../lib/events';
+import { getUpcomingEvents, getEventComedians, eventUrl, openMicSignup, placeOf, FORMAT_LABEL, type EventEntry } from '../../lib/events';
 import { dateParts, parseLocal } from '../../lib/dates';
 import { settings, isOn } from '../../lib/settings';
 import { paragraphs } from '../../lib/text';
@@ -28,6 +28,7 @@ const comics = isOn('comics') ? await getEventComedians(event) : [];
 const others = upcoming.filter((e) => e.id !== event.id && e.data.status !== 'cancelled').slice(0, 3);
 const about = paragraphs(event.body);
 const signup = d.format === 'openmic' && !cancelled ? await openMicSignup(event) : undefined;
+const place = placeOf(event);
 const price = d.priceFrom ? `от ${d.priceFrom.toLocaleString('ru-RU')} ₽` : undefined;
 
 const jsonLd = {
@@ -40,8 +41,8 @@ const jsonLd = {
   ...(moved && d.movedFrom ? { previousStartDate: parseLocal(d.movedFrom).toISOString() } : {}),
   location: {
     '@type': 'Place',
-    name: settings.name,
-    address: { '@type': 'PostalAddress', addressLocality: settings.city, streetAddress: settings.address, addressCountry: 'RU' },
+    name: place.name,
+    address: { '@type': 'PostalAddress', addressLocality: settings.city, streetAddress: place.address, addressCountry: 'RU' },
   },
   organizer: { '@type': 'Organization', name: settings.name, url: 'https://permstandup.ru/' },
   ...(d.priceFrom && d.ticketUrl ? {
@@ -98,6 +99,7 @@ const desc = d.seoDescription ?? `${d.title} — ${p.longWithWeekday}, ${p.time}
       <dl class="card facts">
         <div><dt>{t('show.date')}</dt><dd class:list={{ struck: cancelled }}>{p.longWithWeekday}</dd></div>
         <div><dt>{t('show.start')}</dt><dd>{p.time}</dd></div>
+        {place.away && <div class="wide"><dt>{t('show.place')}</dt><dd>{place.name}{place.name !== place.address && <span class="muted place-addr">{place.address}</span>}</dd></div>}
         {price && <div><dt>{t('show.tickets')}</dt><dd>{price}</dd></div>}
       </dl>
       {cancelled ? (
@@ -154,7 +156,7 @@ const desc = d.seoDescription ?? `${d.title} — ${p.longWithWeekday}, ${p.time}
 
   <section class="container block">
     <h2 class="display h3">{t('show.howToGet')}</h2>
-    <MapBlock />
+    {place.away ? <MapBlock title={place.name} address={place.address} mapQuery={place.mapQuery} /> : <MapBlock />}
   </section>
 
   {others.length > 0 && (
@@ -214,6 +216,8 @@ const desc = d.seoDescription ?? `${d.title} — ${p.longWithWeekday}, ${p.time}
   .facts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; padding: 20px 24px; margin: 0; }
   .facts dt { color: var(--c-muted); font-size: 14px; }
   .facts dd { margin: 0; font-weight: 600; font-size: 19px; }
+  .facts .wide { grid-column: 1 / -1; }
+  .place-addr { display: block; font-weight: 400; font-size: 15px; margin-top: 2px; }
   .links { display: flex; gap: 8px 20px; flex-wrap: wrap; font-size: 15px; align-items: center; }
   .links a, .share { min-height: 44px; display: inline-flex; align-items: center; }
   .share { background: none; border: 0; color: var(--c-text); font: inherit; text-decoration: underline; cursor: pointer; padding: 0; }

@@ -80,6 +80,9 @@ export const eventFields = {
   movedFrom: localDateTime.optional(),
   cancelReason: line(200).optional(),
   cover: uploadPath.optional(),
+  /** Шоу не в клубе: название площадки и адрес. Пусто — в клубе (адрес из настроек). */
+  placeName: line(80).optional(),
+  placeAddress: line(160).optional(),
   comedians: z.array(slug).max(20).default([]),
   important: z.array(line(200)).max(10).optional(),
   published: z.boolean().default(true),

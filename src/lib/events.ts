@@ -89,3 +89,11 @@ export function dateRange(dates: Date[]): string {
     ? `${dayNum.format(from)} — ${dayMonth.format(to)}`
     : `${dayMonth.format(from)} — ${dayMonth.format(to)}`;
 }
+
+/** Где проходит шоу: в клубе или на другой площадке (указывается в шоу) */
+export function placeOf(e: EventEntry) {
+  const address = e.data.placeAddress?.trim();
+  if (!address) return { away: false, name: settings.name, address: settings.address, mapQuery: `${settings.city}, ${settings.address}` };
+  const withCity = address.toLowerCase().includes(settings.city.toLowerCase()) ? address : `${settings.city}, ${address}`;
+  return { away: true, name: e.data.placeName?.trim() || address, address, mapQuery: withCity };
+}

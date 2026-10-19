@@ -2,22 +2,24 @@
 import { t } from '../lib/copy';
 /** Карта клуба (Яндекс) + адрес и кнопки «Маршрут» / телефон. Используется на странице шоу и в контактах. */
 import { settings, telHref } from '../lib/settings';
-interface Props { title?: string; tall?: boolean }
-const { title = 'Стендап-клуб', tall = false } = Astro.props;
-const q = encodeURIComponent(`${settings.city}, ${settings.address}`);
+interface Props { title?: string; tall?: boolean; address?: string; mapQuery?: string }
+const { title = 'Стендап-клуб', tall = false, address } = Astro.props;
+/** address — другая площадка (шоу не в клубе); иначе адрес клуба из настроек */
+const shownAddress = address ?? `${settings.city}, ${settings.address}`;
+const q = encodeURIComponent(Astro.props.mapQuery ?? `${settings.city}, ${settings.address}`);
 ---
 <div class:list={['map-wrap', { tall }]}>
   <iframe
     class="map"
-    title={`Карта: ${settings.address}`}
+    title={`Карта: ${shownAddress}`}
     src={`https://yandex.ru/map-widget/v1/?text=${q}&z=16`}
     loading="lazy"
   ></iframe>
   <div class="addr">
     <slot>
       <div class="display addr-t">{title}</div>
-      <div>{settings.city}, {settings.address}</div>
-      {settings.howToGet && <div class="muted">{settings.howToGet}</div>}
+      <div>{shownAddress}</div>
+      {!address && settings.howToGet && <div class="muted pre">{settings.howToGet}</div>}
       <div class="addr-a">
         <a class="btn btn-outline" href={`https://yandex.ru/maps/?text=${q}`}>{t('map.route')}</a>
         <a class="btn btn-outline" href={telHref}>{settings.phone}</a>

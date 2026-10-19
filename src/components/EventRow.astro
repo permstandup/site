@@ -1,7 +1,7 @@
 ---
 import { t } from '../lib/copy';
 import type { EventEntry } from '../lib/events';
-import { FORMAT_LABEL, eventUrl } from '../lib/events';
+import { FORMAT_LABEL, eventUrl, placeOf } from '../lib/events';
 import { dateParts, parseLocal } from '../lib/dates';
 import { settings } from '../lib/settings';
 
@@ -17,7 +17,8 @@ const top = settings.home.featured === event.id && !cancelled;
 const movedFrom = moved && d.movedFrom ? dateParts(parseLocal(d.movedFrom)) : undefined;
 const dow = start.toLocaleDateString('en-US', { weekday: 'short', timeZone: 'Asia/Yekaterinburg' });
 const weekend = ['Fri', 'Sat', 'Sun'].includes(dow);
-const meta = [p.time, FORMAT_LABEL[d.format], d.age, d.priceFrom ? `от ${d.priceFrom.toLocaleString('ru-RU')} ₽` : null]
+const place = placeOf(event);
+const meta = [p.time, FORMAT_LABEL[d.format], place.away ? place.name : null, d.age, d.priceFrom ? `от ${d.priceFrom.toLocaleString('ru-RU')} ₽` : null]
   .filter(Boolean).join(' · ');
 ---
 <article
