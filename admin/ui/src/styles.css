@@ -289,3 +289,4 @@ body.has-savebar .toast { bottom: 96px; }
   body.has-savebar .main { padding-bottom: 180px; }
   body.has-savebar .toast { bottom: 150px; }
 }
+.warn-text { color: #a8590a; font-weight: 600; }

@@ -17,7 +17,7 @@ const filters = [
 <Base title="Афиша" description="Афиша стендап-концертов, открытых микрофонов и проверочных концертов в Пермском стендап клубе." activeNav="/afisha/" seo={seoFor('afisha')}>
   <section class="container head">
     <h1 class="display h1">Афиша</h1>
-    <p class="lead intro">Стендап с пятницы по воскресенье, проверочные концерты и открытые микрофоны по будням. Сбор гостей за 30 минут, рассадка свободная.</p>
+    <p class="lead intro">Стендап с пятницы по воскресенье, проверочные концерты по будням, открытые микрофоны — по средам и воскресеньям. Сбор гостей за 30 минут, рассадка свободная.</p>
     {upcoming.length > 0 && (
       <div class="filters" role="group" aria-label="Фильтр афиши">
         {filters.map((f, i) => <button type="button" class="chip" data-filter={f.id} aria-pressed={i === 0 ? 'true' : 'false'}>{f.label}</button>)}

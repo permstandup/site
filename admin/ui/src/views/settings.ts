@@ -230,7 +230,7 @@ export function settingsView(app: App, logout: () => void) {
           h('p', { class: 'muted small' }, 'Вся история изменений хранится в GitHub — любую прошлую версию можно вернуть в карточке шоу, комика или фото.'),
           h('button', { type: 'button', class: 'btn btn-danger-outline', onclick: logoutAll }, 'Выйти на всех устройствах')))),
     card('Страница Open mic',
-      field('Когда проходят', textInput(str(() => s.openMic.schedule, (v) => { s.openMic.schedule = v; }), { max: 60, placeholder: 'по будням' })),
+      field('Когда проходят', textInput(str(() => s.openMic.schedule, (v) => { s.openMic.schedule = v; }), { max: 60, placeholder: 'по средам и воскресеньям' })),
       field('Подпись под кнопкой записи', textInput(str(() => s.openMic.contactNote, (v) => { s.openMic.contactNote = v; }), { max: 200 })),
       steps,
       h('div', { class: 'field' }, h('span', { class: 'label' }, 'Правила'),

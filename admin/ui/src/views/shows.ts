@@ -65,7 +65,9 @@ function row(app: App, e: Entry<EventData>) {
     h('div', { class: 'r-date' }, h('div', { class: 'strong' }, f.date), h('div', { class: 'muted small' }, f.time)),
     h('a', { class: 'r-title strong', href: `#/shows/${e.id}` }, d.title,
       app.content.settings.data.home?.featured === e.id ? h('span', { class: 'pill top', title: 'Главное мероприятие' }, ' ★ Топ') : null),
-    h('div', { class: 'r-cast muted small' }, castLine(app, d.comedians)),
+    h('div', { class: 'r-cast muted small' }, d.format === 'openmic'
+      ? (d.host ? `Ведёт: ${app.content.comedians.find((c) => c.id === d.host)?.data.name ?? d.host}` : h('span', { class: 'warn-text' }, 'Ведущий не выбран'))
+      : castLine(app, d.comedians)),
     h('div', { class: 'r-price' }, d.priceFrom ? `от ${d.priceFrom.toLocaleString('ru-RU')} ₽` : '—'),
     h('div', { class: 'r-seats' }, status),
     h('div', { class: ['r-pub', 'small', d.published ? 'on' : 'off'] }, d.published ? 'На сайте' : 'Черновик'),

@@ -12,7 +12,12 @@ import { settings, isOn, seoFor } from '../lib/settings';
 import { HOME_BLOCKS } from '../../shared/schema';
 
 const upcoming = await getUpcomingEvents();
-const openMicContact = (await nextOpenMicSignup(upcoming)).url;
+const nextMic = upcoming.find((e) => e.data.format === 'openmic' && e.data.status !== 'cancelled');
+const micSignup = await nextOpenMicSignup(upcoming);
+const openMicContact = micSignup.url;
+const nextMicLine = nextMic
+  ? (() => { const p = dateParts(parseLocal(nextMic.data.start)); return `Ближайший — ${p.weekday}, ${p.long} в ${p.time}${micSignup.hostName ? `, ведёт ${micSignup.hostName}` : ''}`; })()
+  : '';
 const home = settings.home;
 /** Главное шоу (выбирается в админке). Отменённое или прошедшее — не показывается. */
 const featured = home.featured ? upcoming.find((e) => e.id === home.featured && e.data.status !== 'cancelled') : undefined;
@@ -147,9 +152,10 @@ const jsonLd = {
           <div>
             <h2 class="display h3">{b.title}</h2>
             <p class="lead">{settings.texts.openMic}</p>
+            {nextMicLine && <p class="mic-next">{nextMicLine}</p>}
           </div>
           <div class="cta-actions">
-            <a class="btn btn-light btn-lg" href={openMicContact}>Написать ведущему</a>
+            <a class="btn btn-light btn-lg" href={openMicContact}>{nextMic ? 'Записаться' : 'Написать ведущему'}</a>
             <a class="btn btn-outline btn-lg" href="/open-mic/">Правила</a>
           </div>
         </div>
@@ -226,6 +232,7 @@ const jsonLd = {
   .cta { padding: clamp(24px, 4vw, 40px); display: flex; justify-content: space-between; align-items: center; gap: 24px; flex-wrap: wrap; }
   .cta > div:first-child { max-width: 640px; display: flex; flex-direction: column; gap: 12px; }
   .cta-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+  .mic-next { font-weight: 600; }
 
   @media (max-width: 760px) {
     .facts-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }

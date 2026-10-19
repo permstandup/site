@@ -1,13 +1,20 @@
 ---
 import Base from '../layouts/Base.astro';
 import EventRow from '../components/EventRow.astro';
-import { getUpcomingEvents, nextOpenMicSignup } from '../lib/events';
+import { getUpcomingEvents, nextOpenMicSignup, openMicSignup, eventUrl } from '../lib/events';
+import { dateParts, parseLocal } from '../lib/dates';
 import { settings, isOn, seoFor } from '../lib/settings';
 
 const om = settings.openMic;
 const upcomingAll = await getUpcomingEvents();
 const mics = upcomingAll.filter((e) => e.data.format === 'openmic').slice(0, 4);
 const signup = await nextOpenMicSignup(upcomingAll);
+/** Ведущий меняется от вечера к вечеру — у каждой даты своя ссылка для записи */
+const slots = await Promise.all(mics.filter((e) => e.data.status !== 'cancelled').slice(0, 3).map(async (e) => {
+  const p = dateParts(parseLocal(e.data.start));
+  const w = `${p.weekday}, ${p.long} · ${p.time}`;
+  return { e, when: w.charAt(0).toUpperCase() + w.slice(1), ...(await openMicSignup(e)) };
+}));
 const openMicContact = signup.url;
 const hostIsTelegram = /t\.me\//.test(openMicContact);
 
@@ -32,13 +39,31 @@ const faqLd = {
       <div>
         <div class="eyebrow">Открытый микрофон · {om.schedule}</div>
         <h1 class="display title">Хочешь<br />на сцену?</h1>
-        <p class="lead">Открытый микрофон — место, где новые комики проверяют материал перед живым залом. Запись — через ведущего{hostIsTelegram ? ' в Telegram' : ''}.</p>
+        <p class="lead">Открытый микрофон — место, где новые комики проверяют материал перед живым залом. Ведущий меняется от вечера к вечеру — запись у ведущего нужной даты.</p>
       </div>
       <div class="card signup">
         <div class="display su-t">Записаться</div>
-        <p>Напиши ведущему: как тебя зовут, есть ли опыт и в какой день хочешь выступить.</p>
-        <a class="btn btn-primary btn-lg btn-block" href={openMicContact}>Написать ведущему{hostIsTelegram ? ' в Telegram' : ''}</a>
-        {signup.hostName && <div class="small">Ведущий ближайшего open mic: <b>{signup.hostName}</b></div>}
+        {slots.length > 0 ? (
+          <>
+            <p>Каждый вечер ведёт свой ведущий — напиши тому, кто ведёт нужную дату: как тебя зовут и есть ли опыт.</p>
+            <ul class="slots">
+              {slots.map((s) => (
+                <li class="slot">
+                  <div>
+                    <a class="when" href={eventUrl(s.e)}>{s.when}</a>
+                    <div class="muted small">{s.hostName ? <>Ведёт: <b>{s.hostName}</b></> : 'Ведущий уточняется'}</div>
+                  </div>
+                  <a class="btn btn-primary" href={s.url}>Записаться</a>
+                </li>
+              ))}
+            </ul>
+          </>
+        ) : (
+          <>
+            <p>Напиши ведущему: как тебя зовут, есть ли опыт и в какой день хочешь выступить.</p>
+            <a class="btn btn-primary btn-lg btn-block" href={openMicContact}>Написать ведущему{hostIsTelegram ? ' в Telegram' : ''}</a>
+          </>
+        )}
         {om.contactNote && <div class="muted small">{om.contactNote}</div>}
       </div>
     </div>
@@ -106,6 +131,11 @@ const faqLd = {
   .signup p { color: var(--c-text-2); }
   .su-t { font-size: 28px; font-weight: 600; }
   .small { font-size: 14px; }
+  .slots { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--c-line); }
+  .slot { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 14px 0; border-bottom: 1px solid var(--c-line); }
+  .when { color: var(--c-text); font-weight: 600; text-decoration: none; }
+  .when:hover { color: var(--c-accent-hover); }
+  .slot .btn { flex: none; }
 
   .block { padding-block: 24px 56px; }
   .block h2 { margin-bottom: 20px; }
