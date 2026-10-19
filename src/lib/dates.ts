@@ -37,3 +37,7 @@ export function weekKey(d: Date): string {
   local.setUTCDate(local.getUTCDate() - dow);
   return local.toISOString().slice(0, 10);
 }
+
+export function toIcsStamp(d: Date): string {
+  return d.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
+}
