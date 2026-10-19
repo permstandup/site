@@ -1,4 +1,5 @@
 import raw from '../content/settings.json';
+import { copyText } from '../../shared/copy';
 import { settingsSchema, type Settings } from '../../shared/schema';
 
 /** Настройки проверяются при сборке теми же правилами, что и в админке; недостающие поля получают значения по умолчанию. */
@@ -23,12 +24,12 @@ export const openMicContact = settings.links.openMicHost || settings.links.teleg
 /** Пункты меню. Выключенные разделы пропадают автоматически. */
 export function navItems() {
   return [
-    { href: '/afisha/', label: 'Афиша', on: true },
-    { href: '/comics/', label: 'Комики', on: isOn('comics') },
-    { href: '/#photos', label: 'Фото', on: isOn('photos') },
-    { href: '/open-mic/', label: 'Open mic', on: isOn('openmic') },
-    { href: '/arenda/', label: 'Мероприятия', on: isOn('venue') },
-    { href: '/contacts/', label: 'Контакты', on: true },
+    { href: '/afisha/', label: copyText(settings.copy, 'nav.afisha'), on: true },
+    { href: '/comics/', label: copyText(settings.copy, 'nav.comics'), on: isOn('comics') },
+    { href: '/#photos', label: copyText(settings.copy, 'nav.photos'), on: isOn('photos') },
+    { href: '/open-mic/', label: copyText(settings.copy, 'nav.openmic'), on: isOn('openmic') },
+    { href: '/arenda/', label: copyText(settings.copy, 'nav.venue'), on: isOn('venue') },
+    { href: '/contacts/', label: copyText(settings.copy, 'nav.contacts'), on: true },
   ].filter((i) => i.on);
 }
 

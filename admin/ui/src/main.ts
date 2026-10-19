@@ -11,6 +11,7 @@ import { showEditView } from './views/show-edit';
 import { comicsView } from './views/comics';
 import { photosView } from './views/photos';
 import { settingsView } from './views/settings';
+import { textsView } from './views/texts';
 import { deployIndicator } from './status';
 
 // Защита от встраивания в чужую страницу (дублирует заголовок frame-ancestors)
@@ -33,6 +34,7 @@ const NAV = [
   { hash: '#/shows', label: 'Шоу', icon: 'shows' as const },
   { hash: '#/comics', label: 'Комики', icon: 'comics' as const },
   { hash: '#/photos', label: 'Фото и видео', icon: 'photos' as const },
+  { hash: '#/texts', label: 'Тексты', icon: 'text' as const },
   { hash: '#/settings', label: 'Настройки', icon: 'settings' as const },
 ];
 
@@ -86,6 +88,7 @@ async function render() {
       break;
     case 'comics': active = '#/comics'; view = comicsView(app, parts[1]); break;
     case 'photos': active = '#/photos'; view = photosView(app); break;
+    case 'texts': active = '#/texts'; view = textsView(app); break;
     case 'settings': active = '#/settings'; view = settingsView(app, logout); break;
     default: location.hash = '#/shows'; return;
   }

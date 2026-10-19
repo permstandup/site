@@ -51,6 +51,7 @@ const ICONS: Record<string, string[]> = {
   comics: ['M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8z', 'M4 21a8 8 0 0 1 16 0'],
   photos: ['M3 5h18v14H3z', 'M3 16l5-5 4 4 3-3 6 6', 'M15 9h.01'],
   settings: ['M4 6h16M4 12h16M4 18h16', 'M8 4v4M16 10v4M10 16v4'],
+  text: ['M5 6V4h14v2', 'M12 4v16', 'M9 20h6'],
   up: ['M6 15l6-6 6 6'],
   down: ['M6 9l6 6 6-6'],
   x: ['M6 6l12 12M18 6L6 18'],

@@ -11,7 +11,7 @@ import { historyCard } from './history';
 const SECTIONS: Array<[keyof Settings['sections'], string, string]> = [
   ['comics', 'Комики', 'Меню, главная, страницы комиков'],
   ['photos', 'Фото из клуба', 'Меню, блок на главной'],
-  ['openmic', 'Open mic', 'Меню, блок на главной, страница'],
+  ['openmic', 'Открытый микрофон', 'Меню, блок на главной, страница'],
   ['facts', 'Факты о клубе', 'Четыре карточки на главной'],
   ['video', 'Видео', 'Блок на главной'],
   ['venue', 'Мероприятия', 'Меню, страница «Ваше мероприятие»'],
@@ -55,7 +55,7 @@ export function settingsView(app: App, logout: () => void) {
   // ----- главная страница -----
   const BLOCK_NAMES: Record<(typeof HOME_BLOCKS)[number], [string, string, keyof Settings['sections'] | null]> = {
     afisha: ['Афиша', 'Афиша', null], facts: ['Факты о клубе', '(без заголовка)', 'facts'], comics: ['Комики', 'Комики', 'comics'],
-    video: ['Видео', 'Видео', 'video'], photos: ['Фото из клуба', 'Как у нас в клубе', 'photos'], openmic: ['Open mic', 'Хочешь на сцену?', 'openmic'],
+    video: ['Видео', 'Видео', 'video'], photos: ['Фото из клуба', 'Как у нас в клубе', 'photos'], openmic: ['Открытый микрофон', 'Хочешь на сцену?', 'openmic'],
   };
   for (const id of HOME_BLOCKS) if (!s.home.blocks.some((b) => b.id === id)) s.home.blocks.push({ id, title: '' });
   const blocksBox = h('div', { class: 'blocks' });
@@ -125,7 +125,7 @@ export function settingsView(app: App, logout: () => void) {
   bannerLink.addEventListener('input', renderBannerPrev);
 
   // ----- SEO -----
-  const SEO_PAGES: Array<[keyof Settings['seo']['pages'], string]> = [['home', 'Главная'], ['afisha', 'Афиша'], ['comics', 'Комики'], ['openmic', 'Open mic'], ['contacts', 'Контакты']];
+  const SEO_PAGES: Array<[keyof Settings['seo']['pages'], string]> = [['home', 'Главная'], ['afisha', 'Афиша'], ['comics', 'Комики'], ['openmic', 'Открытый микрофон'], ['contacts', 'Контакты']];
   const seoBox = h('div', { class: 'col' }, SEO_PAGES.map(([k, name]) => {
     const pg = s.seo.pages[k];
     return h('div', { class: 'faq-edit' },
@@ -208,7 +208,7 @@ export function settingsView(app: App, logout: () => void) {
           field('Телефон', textInput(str(() => s.phone, (v) => { s.phone = v; }), { type: 'tel', max: 30 }))),
         card('Ссылки',
           field('Telegram-канал', textInput(str(() => s.links.telegram, (v) => { s.links.telegram = v; }), { type: 'url', max: 300 })),
-          field('Запись на open mic (Telegram или VK ведущего)', textInput(str(() => s.links.openMicHost, (v) => { s.links.openMicHost = v; }), { type: 'url', max: 300, placeholder: 'https://t.me/…' }),
+          field('Запись на открытый микрофон (Telegram или VK, если у шоу нет ведущего)', textInput(str(() => s.links.openMicHost, (v) => { s.links.openMicHost = v; }), { type: 'url', max: 300, placeholder: 'https://t.me/…' }),
             { hint: 'Ведущий сменился — поменяйте ссылку здесь. Пусто — кнопка ведёт в Telegram-канал клуба.' }),
           field('ВКонтакте', textInput(str(() => s.links.vk, (v) => { s.links.vk = v; }), { type: 'url', max: 300 })),
           field('Qtickets — все шоу клуба', textInput(str(() => s.links.qtickets, (v) => { s.links.qtickets = v; }), { type: 'url', max: 500 })),
@@ -217,9 +217,8 @@ export function settingsView(app: App, logout: () => void) {
           stringList({ get: () => s.about.paragraphs, set: (v) => { s.about.paragraphs = v; } }, { max: 6, addLabel: '+ Абзац', maxLen: 1200 }),
           field('Реквизиты', textInput(str(() => s.about.requisites, (v) => { s.about.requisites = v; }), { max: 300, placeholder: 'ИП / ООО, ИНН, ОГРН' })))),
       h('div', { class: 'col' },
-        card('Тексты',
-          field('Подзаголовок на главной', textArea(str(() => s.texts.heroLead, (v) => { s.texts.heroLead = v; }), { rows: 3, max: 400 })),
-          field('Блок «Хочешь на сцену?» на главной', textArea(str(() => s.texts.openMic, (v) => { s.texts.openMic = v; }), { rows: 2, max: 400 })),
+        card('Шоу по умолчанию',
+          h('p', { class: 'muted small' }, 'Все надписи сайта — заголовки, кнопки, подписи — в разделе «Тексты».'),
           h('div', { class: 'field' }, h('span', { class: 'label' }, '«Важно знать» по умолчанию для шоу'),
             stringList({ get: () => s.importantDefault, set: (v) => { s.importantDefault = v; } }, { max: 10, addLabel: '+ Пункт', maxLen: 200 }))),
         card('Факты на главной', facts),
@@ -229,9 +228,8 @@ export function settingsView(app: App, logout: () => void) {
           h('p', { class: 'muted small' }, 'Добавить или убрать человека можно только в настройках сервера (Yandex Cloud) — из админки этого сделать нельзя специально: даже если кто-то получит доступ к админке, он не сможет пустить туда себя.'),
           h('p', { class: 'muted small' }, 'Вся история изменений хранится в GitHub — любую прошлую версию можно вернуть в карточке шоу, комика или фото.'),
           h('button', { type: 'button', class: 'btn btn-danger-outline', onclick: logoutAll }, 'Выйти на всех устройствах')))),
-    card('Страница Open mic',
-      field('Когда проходят', textInput(str(() => s.openMic.schedule, (v) => { s.openMic.schedule = v; }), { max: 60, placeholder: 'по средам и воскресеньям' })),
-      field('Подпись под кнопкой записи', textInput(str(() => s.openMic.contactNote, (v) => { s.openMic.contactNote = v; }), { max: 200 })),
+    card('Страница открытого микрофона',
+      h('p', { class: 'muted small' }, 'Заголовки, кнопки и «Когда проходят» — в разделе «Тексты».'),
       steps,
       h('div', { class: 'field' }, h('span', { class: 'label' }, 'Правила'),
         stringList({ get: () => s.openMic.rules, set: (v) => { s.openMic.rules = v; } }, { max: 12, addLabel: '+ Правило', maxLen: 200 })),

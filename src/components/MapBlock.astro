@@ -1,4 +1,5 @@
 ---
+import { t } from '../lib/copy';
 /** Карта клуба (Яндекс) + адрес и кнопки «Маршрут» / телефон. Используется на странице шоу и в контактах. */
 import { settings, telHref } from '../lib/settings';
 interface Props { title?: string; tall?: boolean }
@@ -18,7 +19,7 @@ const q = encodeURIComponent(`${settings.city}, ${settings.address}`);
       <div>{settings.city}, {settings.address}</div>
       {settings.howToGet && <div class="muted">{settings.howToGet}</div>}
       <div class="addr-a">
-        <a class="btn btn-outline" href={`https://yandex.ru/maps/?text=${q}`}>Построить маршрут</a>
+        <a class="btn btn-outline" href={`https://yandex.ru/maps/?text=${q}`}>{t('map.route')}</a>
         <a class="btn btn-outline" href={telHref}>{settings.phone}</a>
       </div>
     </slot>

@@ -1,14 +1,15 @@
 ---
+import { t } from '../lib/copy';
 import Base from '../layouts/Base.astro';
 ---
 <Base title="Страница не найдена" noindex>
   <section class="container nf">
     <div class="display code">404</div>
-    <h1 class="display h2">Шутка не зашла</h1>
-    <p class="lead">Такой страницы нет — возможно, шоу уже прошло или ссылка устарела. Зато в афише есть свежие.</p>
+    <h1 class="display h2">{t('nf.title')}</h1>
+    <p class="lead pre">{t('nf.text')}</p>
     <div class="actions">
-      <a class="btn btn-primary btn-lg" href="/afisha/">Открыть афишу</a>
-      <a class="btn btn-outline btn-lg" href="/">На главную</a>
+      <a class="btn btn-primary btn-lg" href="/afisha/">{t('nf.afisha')}</a>
+      <a class="btn btn-outline btn-lg" href="/">{t('nf.home')}</a>
     </div>
   </section>
 </Base>

@@ -6,6 +6,7 @@ import EventRow from '../../components/EventRow.astro';
 import VideoGrid from '../../components/VideoGrid.astro';
 import { getUpcomingEvents } from '../../lib/events';
 import { settings, isOn } from '../../lib/settings';
+import { t } from '../../lib/copy';
 
 export async function getStaticPaths() {
   const comics = await getCollection('comedians', ({ data }) => data.visible);
@@ -28,7 +29,7 @@ const fromList = isOn('video')
 const videos = [...fromList, ...own.filter((o) => !fromList.some((f) => f.url === o.url))];
 
 const [first, ...rest] = c.name.split(' ');
-const roleLabel = c.role === 'resident' ? 'Резидент клуба' : 'Гость клуба';
+const roleLabel = c.role === 'resident' ? t('comic.resident') : t('comic.guest');
 const bio = bioParas.join(' ');
 const jsonLd = {
   '@context': 'https://schema.org',
@@ -48,7 +49,7 @@ const jsonLd = {
   jsonLd={jsonLd}
   noindex={!isOn('comics')}
 >
-  <div class="container crumbs muted"><a class="muted" href="/comics/">Комики</a> / {c.name}</div>
+  <div class="container crumbs muted"><a class="muted" href="/comics/">{t('nav.comics')}</a> / {c.name}</div>
 
   <section class="container top">
     <div class="ph portrait">
@@ -70,14 +71,14 @@ const jsonLd = {
   </section>
 
   <section class="container block">
-    <h2 class="display h3">Ближайшие выступления</h2>
+    <h2 class="display h3">{t('comic.upcoming')}</h2>
     {shows.length > 0 ? (
       <div class="rows">{shows.map((e) => <EventRow event={e} />)}</div>
     ) : (
       <div class="card empty">
-        <div>Сейчас в афише нет шоу с участием {c.role === 'resident' ? 'резидента' : 'комика'}. Анонсы — в нашем Telegram.</div>
+        <div>{t('comic.none')}</div>
         <div class="empty-a">
-          <a class="btn btn-outline" href="/afisha/">Вся афиша</a>
+          <a class="btn btn-outline" href="/afisha/">{t('comic.afisha')}</a>
           <a class="btn btn-outline" href={settings.links.telegram}>Telegram</a>
         </div>
       </div>

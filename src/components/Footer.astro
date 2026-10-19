@@ -1,4 +1,5 @@
 ---
+import { t } from '../lib/copy';
 import { settings, telHref, isOn } from '../lib/settings';
 ---
 <footer class="site-footer">
@@ -8,20 +9,20 @@ import { settings, telHref, isOn } from '../lib/settings';
       <div class="muted">{settings.city}, {settings.address}</div>
     </div>
     <div>
-      <div class="muted label">Связь</div>
+      <div class="muted label">{t('footer.contacts')}</div>
       <div><a href={telHref}>{settings.phone}</a></div>
-      <div><a href={settings.links.telegram}>Telegram-канал</a></div>
-      <div><a href={settings.links.vk}>Группа ВКонтакте</a></div>
+      <div><a href={settings.links.telegram}>{t('footer.telegram')}</a></div>
+      <div><a href={settings.links.vk}>{t('footer.vk')}</a></div>
     </div>
     <div>
-      <div class="muted label">Билеты</div>
+      <div class="muted label">{t('footer.tickets')}</div>
       <div><a href={settings.links.qtickets}>Qtickets</a></div>
       <div><a href={settings.links.yandexAfisha}>Яндекс Афиша</a></div>
-      {isOn('venue') && <div class="gap"><a href="/arenda/">Ваше мероприятие в клубе</a></div>}
+      {isOn('venue') && <div class="gap"><a href="/arenda/">{t('footer.venue')}</a></div>}
     </div>
     <div class="muted legal">
       <span class="age">18+</span>
-      <div><a class="muted" href="/privacy/">Политика конфиденциальности</a></div>
+      <div><a class="muted" href="/privacy/">{t('footer.privacy')}</a></div>
     </div>
   </div>
 </footer>

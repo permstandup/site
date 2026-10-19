@@ -1,14 +1,15 @@
 import { getCollection, getEntries, getEntry, type CollectionEntry } from 'astro:content';
 import { settings } from './settings';
+import { t } from './copy';
 import { parseLocal, weekKey, TZ } from './dates';
 
 export type EventEntry = CollectionEntry<'events'>;
 
 export const FORMAT_LABEL: Record<EventEntry['data']['format'], string> = {
-  standup: 'Стендап-шоу',
-  openmic: 'Открытый микрофон',
-  test: 'Проверочный концерт',
-  solo: 'Сольный концерт',
+  standup: t('fmt.standup'),
+  openmic: t('fmt.openmic'),
+  test: t('fmt.test'),
+  solo: t('fmt.solo'),
 };
 
 /** Шоу длится около 1,5 часа — после этого оно считается прошедшим. */

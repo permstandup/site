@@ -3,21 +3,22 @@ import Base from '../layouts/Base.astro';
 import EventRow from '../components/EventRow.astro';
 import { getUpcomingEvents, groupByWeek } from '../lib/events';
 import { settings, seoFor } from '../lib/settings';
+import { t } from '../lib/copy';
 
 const upcoming = await getUpcomingEvents();
 const groups = groupByWeek(upcoming);
 const filters = [
-  { id: 'all', label: 'Все' },
-  { id: 'standup', label: 'Стендап-шоу' },
-  { id: 'openmic', label: 'Открытый микрофон' },
-  { id: 'test', label: 'Проверочные' },
-  { id: 'weekend', label: 'Только выходные' },
+  { id: 'all', label: t('afisha.fAll') },
+  { id: 'standup', label: t('afisha.fStandup') },
+  { id: 'openmic', label: t('afisha.fOpenmic') },
+  { id: 'test', label: t('afisha.fTest') },
+  { id: 'weekend', label: t('afisha.fWeekend') },
 ];
 ---
 <Base title="Афиша" description="Афиша стендап-концертов, открытых микрофонов и проверочных концертов в Пермском стендап клубе." activeNav="/afisha/" seo={seoFor('afisha')}>
   <section class="container head">
-    <h1 class="display h1">Афиша</h1>
-    <p class="lead intro">Стендап с пятницы по воскресенье, проверочные концерты по будням, открытые микрофоны — по средам и воскресеньям. Сбор гостей за 30 минут, рассадка свободная.</p>
+    <h1 class="display h1">{t('afisha.title')}</h1>
+    {t('afisha.lead') && <p class="lead intro pre">{t('afisha.lead')}</p>}
     {upcoming.length > 0 && (
       <div class="filters" role="group" aria-label="Фильтр афиши">
         {filters.map((f, i) => <button type="button" class="chip" data-filter={f.id} aria-pressed={i === 0 ? 'true' : 'false'}>{f.label}</button>)}
@@ -29,11 +30,11 @@ const filters = [
     {upcoming.length === 0 ? (
       <div class="empty">
         <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="var(--c-accent-hover)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="2" width="6" height="11" rx="3"></rect><path d="M5 10a7 7 0 0 0 14 0M12 17v5M8 22h8"></path></svg>
-        <h2 class="display h3">Скоро объявим новые шоу</h2>
-        <p class="lead">Комики сейчас готовят новый материал. Подпишитесь на Telegram — анонсы и скидки приходят туда первыми.</p>
+        <h2 class="display h3">{t('afisha.emptyTitle')}</h2>
+        {t('afisha.emptyText') && <p class="lead pre">{t('afisha.emptyText')}</p>}
         <div class="empty-actions">
-          <a class="btn btn-primary btn-lg" href={settings.links.telegram}>Подписаться в Telegram</a>
-          <a class="btn btn-outline btn-lg" href={settings.links.vk}>Группа ВКонтакте</a>
+          <a class="btn btn-primary btn-lg" href={settings.links.telegram}>{t('afisha.emptyTg')}</a>
+          <a class="btn btn-outline btn-lg" href={settings.links.vk}>{t('afisha.emptyVk')}</a>
         </div>
       </div>
     ) : (
@@ -44,10 +45,10 @@ const filters = [
             <div class="rows">{g.events.map((e) => <EventRow event={e} />)}</div>
           </div>
         ))}
-        <p class="muted nothing" hidden>По этому фильтру ничего нет — загляните в «Все».</p>
+        <p class="muted nothing" hidden>{t('afisha.nothing')}</p>
         <div class="card sub">
-          <div>Афиша обновляется каждую неделю — анонсы и скидки первыми в Telegram.</div>
-          <a class="btn btn-outline" href={settings.links.telegram}>Подписаться на канал</a>
+          <div>{t('afisha.subText')}</div>
+          <a class="btn btn-outline" href={settings.links.telegram}>{t('afisha.subBtn')}</a>
         </div>
       </>
     )}

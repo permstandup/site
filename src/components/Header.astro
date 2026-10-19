@@ -1,4 +1,5 @@
 ---
+import { t } from '../lib/copy';
 import Logo from './Logo.astro';
 import { navItems, settings, telHref } from '../lib/settings';
 
@@ -14,7 +15,7 @@ const items = navItems();
         <a href={i.href} aria-current={active === i.href ? 'page' : undefined}>{i.label}</a>
       ))}
     </nav>
-    <a class="btn btn-primary buy" href="/afisha/">Купить билет</a>
+    <a class="btn btn-primary buy" href="/afisha/">{t('header.buy')}</a>
 
     <details class="nav-mobile">
       <summary aria-label="Открыть меню">
@@ -27,7 +28,7 @@ const items = navItems();
           ))}
         </nav>
         <div class="sheet-foot">
-          <a class="btn btn-primary btn-lg btn-block" href="/afisha/">Купить билет</a>
+          <a class="btn btn-primary btn-lg btn-block" href="/afisha/">{t('header.buy')}</a>
           <div class="row">
             <a class="btn btn-outline" href={settings.links.telegram}>Telegram</a>
             <a class="btn btn-outline" href={settings.links.vk}>ВКонтакте</a>
@@ -42,12 +43,12 @@ const items = navItems();
 <style>
   .site-header { border-bottom: 1px solid rgba(244, 241, 234, .1); position: relative; z-index: 20; }
   .bar { display: flex; align-items: center; justify-content: space-between; gap: 24px; padding-block: 16px; }
-  .nav-desktop { display: flex; gap: 28px; font-size: 16px; }
-  .nav-desktop a { text-decoration: none; }
+  .nav-desktop { display: flex; gap: clamp(16px, 1.8vw, 28px); font-size: 16px; }
+  .nav-desktop a { text-decoration: none; white-space: nowrap; }
   .nav-desktop a[aria-current='page'] { color: var(--c-accent-hover); }
   .nav-mobile { display: none; }
 
-  @media (max-width: 960px) {
+  @media (max-width: 1120px) {
     .nav-desktop, .buy { display: none; }
     .nav-mobile { display: block; }
     .nav-mobile summary {

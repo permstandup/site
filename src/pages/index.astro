@@ -9,14 +9,15 @@ import NextShowBar from '../components/NextShowBar.astro';
 import { getUpcomingEvents, nextOnSale, eventUrl, nextOpenMicSignup } from '../lib/events';
 import { dateParts, parseLocal } from '../lib/dates';
 import { settings, isOn, seoFor } from '../lib/settings';
+import { t } from '../lib/copy';
 import { HOME_BLOCKS } from '../../shared/schema';
 
 const upcoming = await getUpcomingEvents();
 const nextMic = upcoming.find((e) => e.data.format === 'openmic' && e.data.status !== 'cancelled');
 const micSignup = await nextOpenMicSignup(upcoming);
 const openMicContact = micSignup.url;
-const nextMicLine = nextMic
-  ? (() => { const p = dateParts(parseLocal(nextMic.data.start)); return `Ближайший — ${p.weekday}, ${p.long} в ${p.time}${micSignup.hostName ? `, ведёт ${micSignup.hostName}` : ''}`; })()
+const nextMicLine = nextMic && t('home.micNext')
+  ? (() => { const p = dateParts(parseLocal(nextMic.data.start)); return `${t('home.micNext')} ${p.weekday}, ${p.long} в ${p.time}${micSignup.hostName ? `, ведёт ${micSignup.hostName}` : ''}`; })()
   : '';
 const home = settings.home;
 /** Главное шоу (выбирается в админке). Отменённое или прошедшее — не показывается. */
@@ -27,7 +28,7 @@ const nextSoldOut = next?.data.seats === 'out';
 
 /** Порядок и заголовки блоков главной — из админки. Блоки, которых нет в списке, идут в конце. */
 type BlockId = (typeof HOME_BLOCKS)[number];
-const DEFAULT_TITLES: Record<BlockId, string> = { afisha: 'Афиша', facts: '', comics: 'Комики', video: 'Видео', photos: 'Как у нас в клубе', openmic: 'Хочешь на сцену?' };
+const DEFAULT_TITLES: Record<BlockId, string> = { afisha: t('nav.afisha'), facts: '', comics: 'Комики', video: 'Видео', photos: 'Как у нас в клубе', openmic: 'Хочешь на сцену?' };
 const SECTION_OF: Partial<Record<BlockId, Parameters<typeof isOn>[0]>> = { facts: 'facts', comics: 'comics', video: 'video', photos: 'photos', openmic: 'openmic' };
 const ordered = [...home.blocks, ...HOME_BLOCKS.filter((id) => !home.blocks.some((b) => b.id === id)).map((id) => ({ id, title: '' }))];
 const blocks = ordered
@@ -52,17 +53,19 @@ const jsonLd = {
   <section class="hero">
     <div class:list={['container', 'hero-grid', { 'has-featured': featured }]}>
       <div class="hero-text">
-        <p class="kicker muted">{settings.city} · {settings.address} · 18+</p>
+        <p class="kicker muted">{t('home.kicker') || `${settings.city} · ${settings.address} · 18+`}</p>
         <h1 class="display title">
-          <span class="small">Пермский</span>
-          <span class="big">Stand up</span>
-          <span class="small">клуб</span>
+          {t('home.titleTop') && <span class="small">{t('home.titleTop')}</span>}
+          <span class="big">{t('home.titleBig')}</span>
+          {t('home.titleBottom') && <span class="small">{t('home.titleBottom')}</span>}
         </h1>
-        <p class="lead hero-lead">{settings.texts.heroLead}</p>
-        <div class="hero-actions">
-          <a class="btn btn-outline btn-lg" href="/afisha/">Вся афиша</a>
-          <a class="btn btn-outline btn-lg" href={settings.links.telegram}>Telegram-канал</a>
-        </div>
+        <p class="lead hero-lead pre">{settings.texts.heroLead}</p>
+        {(t('home.btnAfisha') || t('home.btnTelegram')) && (
+          <div class="hero-actions">
+            {t('home.btnAfisha') && <a class="btn btn-outline btn-lg" href="/afisha/">{t('home.btnAfisha')}</a>}
+            {t('home.btnTelegram') && <a class="btn btn-outline btn-lg" href={settings.links.telegram}>{t('home.btnTelegram')}</a>}
+          </div>
+        )}
       </div>
 
       {next && nextP ? (
@@ -73,22 +76,22 @@ const jsonLd = {
             </a>
           )}
           <div class="next-body">
-          <div class="eyebrow">{featured ? (home.featuredLabel || 'Главное мероприятие') : 'Ближайшее шоу'}</div>
+          <div class="eyebrow">{featured ? (home.featuredLabel || 'Главное мероприятие') : t('home.nextLabel')}</div>
           <a class="display next-title" href={eventUrl(next)}>{next.data.title}</a>
           {featured && home.featuredText && <p class="next-text">{home.featuredText}</p>}
           <dl class="facts">
-            <div><dt>Дата</dt><dd>{nextP.longWithWeekday}</dd></div>
-            <div><dt>Начало</dt><dd>{nextP.time}</dd></div>
-            {next.data.priceFrom && <div><dt>Билеты</dt><dd>от {next.data.priceFrom.toLocaleString('ru-RU')} ₽</dd></div>}
+            <div><dt>{t('show.date')}</dt><dd>{nextP.longWithWeekday}</dd></div>
+            <div><dt>{t('show.start')}</dt><dd>{nextP.time}</dd></div>
+            {next.data.priceFrom && <div><dt>{t('show.tickets')}</dt><dd>от {next.data.priceFrom.toLocaleString('ru-RU')} ₽</dd></div>}
           </dl>
-          {!featured && <p class="muted note">Сбор гостей за 30 минут. Рассадка свободная — компании лучше брать билеты одним заказом.</p>}
+          {!featured && t('home.nextNote') && <p class="muted note pre">{t('home.nextNote')}</p>}
           <div class="next-actions">
             {nextSoldOut ? (
-              <a class="btn btn-outline btn-lg" href={eventUrl(next)}>Билеты закончились — подробнее</a>
+              <a class="btn btn-outline btn-lg" href={eventUrl(next)}>{t('home.soldOut')}</a>
             ) : (
               <>
-                <a class="btn btn-primary btn-lg" href={next.data.ticketUrl ?? eventUrl(next)}>Купить билет</a>
-                <a class="btn btn-outline btn-lg" href={eventUrl(next)}>Подробнее</a>
+                <a class="btn btn-primary btn-lg" href={next.data.ticketUrl ?? eventUrl(next)}>{t('home.buy')}</a>
+                <a class="btn btn-outline btn-lg" href={eventUrl(next)}>{t('home.more')}</a>
               </>
             )}
           </div>
@@ -96,10 +99,10 @@ const jsonLd = {
         </div>
       ) : (
         <div class="card next">
-          <div class="eyebrow">Афиша</div>
-          <div class="display next-title">Скоро объявим новые шоу</div>
-          <p class="muted note">Анонсы и скидки первыми — в Telegram.</p>
-          <a class="btn btn-primary btn-lg" href={settings.links.telegram}>Подписаться в Telegram</a>
+          <div class="eyebrow">{t('nav.afisha')}</div>
+          <div class="display next-title">{t('home.emptyTitle')}</div>
+          {t('home.emptyText') && <p class="muted note">{t('home.emptyText')}</p>}
+          <a class="btn btn-primary btn-lg" href={settings.links.telegram}>{t('home.emptyBtn')}</a>
         </div>
       )}
     </div>
@@ -113,7 +116,7 @@ const jsonLd = {
       <div class="container">
         <div class="section-head">
           <h2 class="display h2">{b.title}</h2>
-          <a class="link-more" href="/afisha/">Вся афиша →</a>
+          <a class="link-more" href="/afisha/">{t('home.afishaMore')}</a>
         </div>
         <div class="rows">{afisha.map((e) => <EventRow event={e} />)}</div>
       </div>
@@ -136,7 +139,7 @@ const jsonLd = {
       <div class="container">
         <div class="section-head">
           <h2 class="display h2">{b.title}</h2>
-          <a class="link-more" href="/comics/">Все комики →</a>
+          <a class="link-more" href="/comics/">{t('home.comicsMore')}</a>
         </div>
         <div class="comics">{comics.map((c) => <ComicCard comic={c} />)}</div>
       </div>
@@ -151,12 +154,12 @@ const jsonLd = {
         <div class="card cta">
           <div>
             <h2 class="display h3">{b.title}</h2>
-            <p class="lead">{settings.texts.openMic}</p>
+            <p class="lead pre">{settings.texts.openMic}</p>
             {nextMicLine && <p class="mic-next">{nextMicLine}</p>}
           </div>
           <div class="cta-actions">
-            <a class="btn btn-light btn-lg" href={openMicContact}>{nextMic ? 'Записаться' : 'Написать ведущему'}</a>
-            <a class="btn btn-outline btn-lg" href="/open-mic/">Правила</a>
+            <a class="btn btn-light btn-lg" href={openMicContact}>{nextMic ? t('home.micSignup') : t('home.micWrite')}</a>
+            <a class="btn btn-outline btn-lg" href="/open-mic/">{t('home.micRules')}</a>
           </div>
         </div>
       </div>

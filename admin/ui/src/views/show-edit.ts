@@ -159,7 +159,7 @@ export function showEditView(app: App, id: string, query: URLSearchParams, prefi
     h('option', { value: '', selected: !d.host }, '— не указан —'),
     comics.map((c) => h('option', { value: c.id, selected: d.host === c.id }, c.data.name)));
   hostSel.addEventListener('change', () => { d.host = hostSel.value || undefined; markDirty(); });
-  const hostCard = card('Open mic: ведущий и запись',
+  const hostCard = card('Открытый микрофон: ведущий и запись',
     h('div', { class: 'grid2' },
       field('Ведущий', hostSel),
       field('Ссылка для записи (Telegram или VK ведущего)', textInput({ get: () => d.hostUrl, set: (v) => { d.hostUrl = v?.trim() || undefined; } }, { type: 'url', placeholder: 'https://t.me/…', max: 300 }))),

@@ -4,6 +4,7 @@ import EventRow from '../components/EventRow.astro';
 import { getUpcomingEvents, nextOpenMicSignup, openMicSignup, eventUrl } from '../lib/events';
 import { dateParts, parseLocal } from '../lib/dates';
 import { settings, isOn, seoFor } from '../lib/settings';
+import { t } from '../lib/copy';
 
 const om = settings.openMic;
 const upcomingAll = await getUpcomingEvents();
@@ -16,7 +17,6 @@ const slots = await Promise.all(mics.filter((e) => e.data.status !== 'cancelled'
   return { e, when: w.charAt(0).toUpperCase() + w.slice(1), ...(await openMicSignup(e)) };
 }));
 const openMicContact = signup.url;
-const hostIsTelegram = /t\.me\//.test(openMicContact);
 
 const faqLd = {
   '@context': 'https://schema.org',
@@ -27,8 +27,8 @@ const faqLd = {
 };
 ---
 <Base
-  title="Open mic — как выступить"
-  description={`Открытый микрофон в Пермском стендап клубе ${om.schedule}. Как записаться, правила и частые вопросы.`}
+  title="Открытый микрофон — как выступить"
+  description={`Открытый микрофон в Пермском стендап клубе${om.schedule ? ' ' + om.schedule : ''}. Как записаться, правила и частые вопросы.`}
   activeNav="/open-mic/"
   jsonLd={faqLd.mainEntity.length ? faqLd : undefined}
   noindex={!isOn('openmic')}
@@ -37,31 +37,31 @@ const faqLd = {
   <section class="hero">
     <div class="container hero-grid">
       <div>
-        <div class="eyebrow">Открытый микрофон · {om.schedule}</div>
-        <h1 class="display title">Хочешь<br />на сцену?</h1>
-        <p class="lead">Открытый микрофон — место, где новые комики проверяют материал перед живым залом. Ведущий меняется от вечера к вечеру — запись у ведущего нужной даты.</p>
+        {(t('om.eyebrow') || om.schedule) && <div class="eyebrow">{[t('om.eyebrow'), om.schedule].filter(Boolean).join(' · ')}</div>}
+        <h1 class="display title pre">{t('om.title')}</h1>
+        {t('om.lead') && <p class="lead pre">{t('om.lead')}</p>}
       </div>
       <div class="card signup">
-        <div class="display su-t">Записаться</div>
+        <div class="display su-t">{t('om.signupTitle')}</div>
         {slots.length > 0 ? (
           <>
-            <p>Каждый вечер ведёт свой ведущий — напиши тому, кто ведёт нужную дату: как тебя зовут и есть ли опыт.</p>
+            {t('om.signupText') && <p class="pre">{t('om.signupText')}</p>}
             <ul class="slots">
               {slots.map((s) => (
                 <li class="slot">
                   <div>
                     <a class="when" href={eventUrl(s.e)}>{s.when}</a>
-                    <div class="muted small">{s.hostName ? <>Ведёт: <b>{s.hostName}</b></> : 'Ведущий уточняется'}</div>
+                    <div class="muted small">{s.hostName ? <>{t('om.hostPrefix')} <b>{s.hostName}</b></> : t('om.hostTbd')}</div>
                   </div>
-                  <a class="btn btn-primary" href={s.url}>Записаться</a>
+                  <a class="btn btn-primary" href={s.url}>{t('om.signupBtn')}</a>
                 </li>
               ))}
             </ul>
           </>
         ) : (
           <>
-            <p>Напиши ведущему: как тебя зовут, есть ли опыт и в какой день хочешь выступить.</p>
-            <a class="btn btn-primary btn-lg btn-block" href={openMicContact}>Написать ведущему{hostIsTelegram ? ' в Telegram' : ''}</a>
+            {t('om.noDatesText') && <p class="pre">{t('om.noDatesText')}</p>}
+            <a class="btn btn-primary btn-lg btn-block" href={openMicContact}>{t('om.noDatesBtn')}</a>
           </>
         )}
         {om.contactNote && <div class="muted small">{om.contactNote}</div>}
@@ -70,7 +70,7 @@ const faqLd = {
   </section>
 
   <section class="container block">
-    <h2 class="display h2">Как это работает</h2>
+    <h2 class="display h2">{t('om.howTitle')}</h2>
     <ol class="steps">
       {om.steps.map((s, i) => (
         <li class="card step">
@@ -84,11 +84,11 @@ const faqLd = {
 
   <section class="container block two">
     <div>
-      <h2 class="display h3">Правила</h2>
+      <h2 class="display h3">{t('om.rulesTitle')}</h2>
       <ul class="rules">{om.rules.map((r) => <li>{r}</li>)}</ul>
     </div>
     <div>
-      <h2 class="display h3">Частые вопросы</h2>
+      <h2 class="display h3">{t('om.faqTitle')}</h2>
       <div class="faq">
         {om.faq.map((f, i) => (
           <details class="card" open={i === 0}>
@@ -102,7 +102,7 @@ const faqLd = {
 
   {mics.length > 0 && (
     <section class="container block">
-      <h2 class="display h3">Ближайшие open mic</h2>
+      <h2 class="display h3">{t('om.upcomingTitle')}</h2>
       <div class="rows">{mics.map((e) => <EventRow event={e} />)}</div>
     </section>
   )}
@@ -110,10 +110,10 @@ const faqLd = {
   <section class="container block last">
     <div class="card watch">
       <div>
-        <div class="display wt">Хочешь просто посмотреть?</div>
-        <div class="muted">Открытые микрофоны есть в афише — на них можно прийти зрителем.</div>
+        <div class="display wt">{t('om.watchTitle')}</div>
+        {t('om.watchText') && <div class="muted">{t('om.watchText')}</div>}
       </div>
-      <a class="btn btn-outline btn-lg" href="/afisha/">Открыть афишу</a>
+      <a class="btn btn-outline btn-lg" href="/afisha/">{t('om.watchBtn')}</a>
     </div>
   </section>
 </Base>

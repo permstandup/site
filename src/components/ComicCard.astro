@@ -1,9 +1,10 @@
 ---
+import { t } from '../lib/copy';
 import type { CollectionEntry } from 'astro:content';
 interface Props { comic: CollectionEntry<'comedians'>; size?: 'l' | 's' }
 const { comic, size = 'l' } = Astro.props;
 const c = comic.data;
-const roleLabel = c.role === 'resident' ? (c.tagline ?? 'Резидент клуба') : c.city ? `Гость · ${c.city}` : 'Гость клуба';
+const roleLabel = c.role === 'resident' ? (c.tagline ?? t('comic.resident')) : c.city ? `Гость · ${c.city}` : t('comic.guest');
 ---
 <a href={`/comics/${comic.id}/`} class:list={['comic', `comic-${size}`]}>
   <div class="ph photo">

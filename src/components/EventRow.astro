@@ -1,4 +1,5 @@
 ---
+import { t } from '../lib/copy';
 import type { EventEntry } from '../lib/events';
 import { FORMAT_LABEL, eventUrl } from '../lib/events';
 import { dateParts, parseLocal } from '../lib/dates';
@@ -32,22 +33,22 @@ const meta = [p.time, FORMAT_LABEL[d.format], d.age, d.priceFrom ? `от ${d.pri
     <h3 class="title">
       <a href={eventUrl(event)}>{d.title}</a>
       {top && <span class="tag tag-top">{settings.home.featuredLabel || 'Главное мероприятие'}</span>}
-      {moved && movedFrom && <span class="tag tag-moved">Перенесено с {movedFrom.day} {movedFrom.month}</span>}
-      {cancelled && <span class="tag tag-cancel">Отменено</span>}
-      {!cancelled && d.seats === 'few' && <span class="tag tag-few">Мало мест</span>}
+      {moved && movedFrom && <span class="tag tag-moved">{t('tag.moved')} с {movedFrom.day} {movedFrom.month}</span>}
+      {cancelled && <span class="tag tag-cancel">{t('tag.cancelled')}</span>}
+      {!cancelled && d.seats === 'few' && <span class="tag tag-few">{t('tag.few')}</span>}
     </h3>
     <p class="meta"><span class="visually-hidden">{p.longWithWeekday}, </span>{meta}</p>
   </div>
   <div class="action">
     {cancelled ? (
-      <a class="btn btn-outline" href={eventUrl(event)}>Как вернуть билет</a>
+      <a class="btn btn-outline" href={eventUrl(event)}>{t('row.refund')}</a>
     ) : (
       <>
-        <a class="btn btn-outline" href={eventUrl(event)}>Подробнее</a>
+        <a class="btn btn-outline" href={eventUrl(event)}>{t('row.more')}</a>
         {soldOut ? (
-          <span class="btn btn-outline off" aria-disabled="true">Sold out</span>
+          <span class="btn btn-outline off" aria-disabled="true">{t('row.soldOut')}</span>
         ) : d.ticketUrl && (
-          <a class="btn btn-accent-outline" href={d.ticketUrl}>Билеты</a>
+          <a class="btn btn-accent-outline" href={d.ticketUrl}>{t('row.tickets')}</a>
         )}
       </>
     )}

@@ -13,6 +13,7 @@
  *  - идентификаторы (имена файлов) — только латиница, цифры и дефис.
  */
 import { z } from 'zod';
+import { COPY_DEFS, type CopyDef } from './copy';
 
 // ---------- базовые типы ----------
 
@@ -134,6 +135,9 @@ export const videosSchema = z.array(videoItemSchema).max(50)
 
 // ---------- настройки клуба ----------
 
+const copySchema = z.object(Object.fromEntries((Object.entries(COPY_DEFS) as Array<[string, CopyDef]>).map(([k, def]) =>
+  [k, (def.multi ? text(def.max) : line(def.max)).optional()]))).strict();
+
 /** Цветовые темы — только из готового списка (значения цветов — в shared/themes.ts) */
 export const THEMES = ['violet', 'coral', 'mint', 'sky'] as const;
 /** Цвет фона — тоже только из готового списка (значения — в shared/themes.ts) */
@@ -234,6 +238,8 @@ export const settingsSchema = z.object({
   comicsLead: line(200),
   /** Страница «Мероприятия»: аренда зала под свои события */
   venue: venueSchema.default(DEFAULT_VENUE),
+  /** Изменённые надписи сайта (остальные — стандартные из shared/copy.ts). Чужие ключи не принимаются. */
+  copy: copySchema.default({}),
   theme: z.enum(THEMES).default('violet'),
   background: z.enum(BACKGROUNDS).default('teal'),
   home: homeSchema.default({ featured: '', featuredLabel: 'Главное мероприятие', featuredText: '', blocks: DEFAULT_HOME_BLOCKS }),

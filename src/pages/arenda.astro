@@ -2,10 +2,10 @@
 /** «Мероприятия»: зал клуба под свои события. Тексты и фото — в админке (Настройки → Мероприятия). */
 import Base from '../layouts/Base.astro';
 import { settings, isOn, telHref } from '../lib/settings';
+import { t } from '../lib/copy';
 
 const v = settings.venue;
 const contact = v.contact || settings.links.telegram;
-const contactIsTg = /t\.me\//.test(contact);
 const [first, ...rest] = v.photos;
 ---
 <Base
@@ -20,9 +20,9 @@ const [first, ...rest] = v.photos;
       <div class="text">
         <div class="eyebrow">{settings.city} · {settings.address}</div>
         <h1 class="display h1">{v.title}</h1>
-        <p class="lead">{v.lead}</p>
+        <p class="lead pre">{v.lead}</p>
         <div class="actions">
-          <a class="btn btn-primary btn-lg" href={contact}>Обсудить мероприятие{contactIsTg ? ' в Telegram' : ''}</a>
+          <a class="btn btn-primary btn-lg" href={contact}>{t('venue.btn')}</a>
           <a class="btn btn-outline btn-lg" href={telHref}>{settings.phone}</a>
         </div>
       </div>
@@ -51,12 +51,12 @@ const [first, ...rest] = v.photos;
   <section class="container block last">
     <div class="card cta">
       <div>
-        <div class="display h3">Расскажите, что задумали</div>
-        <p class="muted">Дата, сколько гостей, что нужно — подберём формат и посчитаем стоимость.</p>
+        <div class="display h3">{t('venue.ctaTitle')}</div>
+        {t('venue.ctaText') && <p class="muted">{t('venue.ctaText')}</p>}
       </div>
       <div class="actions">
-        <a class="btn btn-primary btn-lg" href={contact}>Написать</a>
-        <a class="btn btn-outline btn-lg" href={telHref}>Позвонить</a>
+        <a class="btn btn-primary btn-lg" href={contact}>{t('venue.write')}</a>
+        <a class="btn btn-outline btn-lg" href={telHref}>{t('venue.call')}</a>
       </div>
     </div>
   </section>

@@ -7,6 +7,7 @@ import { getUpcomingEvents, getEventComedians, eventUrl, openMicSignup, FORMAT_L
 import { dateParts, parseLocal } from '../../lib/dates';
 import { settings, isOn } from '../../lib/settings';
 import { paragraphs } from '../../lib/text';
+import { t } from '../../lib/copy';
 
 export async function getStaticPaths() {
   const upcoming = await getUpcomingEvents();
@@ -54,30 +55,30 @@ const jsonLd = {
 const desc = d.seoDescription ?? `${d.title} — ${p.longWithWeekday}, ${p.time}. ${FORMAT_LABEL[d.format]} в Пермском стендап клубе${price ? `, билеты ${price}` : ''}.`;
 ---
 <Base title={`${d.title}, ${p.long}`} description={desc} ogImage={`/og/shows/${event.id}.png`} activeNav="/afisha/" jsonLd={jsonLd}>
-  <div class="container crumbs muted"><a class="muted" href="/afisha/">Афиша</a> / {d.title}</div>
+  <div class="container crumbs muted"><a class="muted" href="/afisha/">{t('nav.afisha')}</a> / {d.title}</div>
 
   {(cancelled || moved) && (
     <section class="container">
       {cancelled ? (
         <div class="notice notice-cancel" role="status">
-          <span class="tag tag-cancel">Отменено</span>
+          <span class="tag tag-cancel">{t('tag.cancelled')}</span>
           <div class="nt">
             <div class="nh">Шоу {p.long} отменено</div>
-            <div>{d.cancelReason ? `Причина: ${d.cancelReason}. ` : ''}Деньги за билеты возвращаются через Qtickets. Если не пришли — напишите нам.</div>
+            <div class="pre">{d.cancelReason ? `Причина: ${d.cancelReason}. ` : ''}{t('show.cancelText')}</div>
           </div>
           <div class="na">
-            <a class="btn btn-light" href={d.ticketUrl ?? settings.links.qtickets}>Как вернуть билет</a>
-            <a class="btn btn-outline" href={settings.links.telegram}>Написать нам</a>
+            <a class="btn btn-light" href={d.ticketUrl ?? settings.links.qtickets}>{t('show.refund')}</a>
+            <a class="btn btn-outline" href={settings.links.telegram}>{t('show.writeUs')}</a>
           </div>
         </div>
       ) : (
         <div class="notice notice-moved" role="status">
-          <span class="tag tag-moved">Перенесено</span>
+          <span class="tag tag-moved">{t('tag.moved')}</span>
           <div class="nt">
             <div class="nh">Шоу перенесено{from ? ` с ${from.long}` : ''} на {p.long}, {p.time}</div>
-            <div>Купленные билеты действуют на новую дату. Если она не подходит — билет можно вернуть через Qtickets.</div>
+            <div class="pre">{t('show.movedText')}</div>
           </div>
-          <div class="na"><a class="btn btn-outline" href={d.ticketUrl ?? settings.links.qtickets}>Вернуть билет</a></div>
+          <div class="na"><a class="btn btn-outline" href={d.ticketUrl ?? settings.links.qtickets}>{t('show.movedRefund')}</a></div>
         </div>
       )}
     </section>
@@ -91,24 +92,24 @@ const desc = d.seoDescription ?? `${d.title} — ${p.longWithWeekday}, ${p.time}
       <div class="tags">
         <span class="tag tag-outline">{FORMAT_LABEL[d.format]}</span>
         <span class="tag tag-outline">{d.age}</span>
-        {!cancelled && d.seats === 'few' && <span class="tag tag-few">Мало мест</span>}
+        {!cancelled && d.seats === 'few' && <span class="tag tag-few">{t('tag.few')}</span>}
       </div>
       <h1 class:list={['display', 'h1', { struck: cancelled }]}>{d.title}</h1>
       <dl class="card facts">
-        <div><dt>Дата</dt><dd class:list={{ struck: cancelled }}>{p.longWithWeekday}</dd></div>
-        <div><dt>Начало</dt><dd>{p.time}</dd></div>
-        {price && <div><dt>Билеты</dt><dd>{price}</dd></div>}
+        <div><dt>{t('show.date')}</dt><dd class:list={{ struck: cancelled }}>{p.longWithWeekday}</dd></div>
+        <div><dt>{t('show.start')}</dt><dd>{p.time}</dd></div>
+        {price && <div><dt>{t('show.tickets')}</dt><dd>{price}</dd></div>}
       </dl>
       {cancelled ? (
-        <a class="btn btn-outline btn-lg" href="/afisha/">Посмотреть другие шоу</a>
+        <a class="btn btn-outline btn-lg" href="/afisha/">{t('show.other')}</a>
       ) : soldOut ? (
-        <span class="btn btn-outline btn-lg" aria-disabled="true">Билеты закончились</span>
+        <span class="btn btn-outline btn-lg" aria-disabled="true">{t('show.soldOut')}</span>
       ) : d.ticketUrl && (
-        <a class="btn btn-primary btn-lg" href={d.ticketUrl}>{moved ? `Купить билет на ${p.long}` : 'Купить билет'}</a>
+        <a class="btn btn-primary btn-lg" href={d.ticketUrl}>{moved ? `${t('show.buy')} на ${p.long}` : t('show.buy')}</a>
       )}
       <div class="links">
-        <a href={settings.links.yandexAfisha}>Также в Яндекс Афише</a>
-        <button type="button" class="share" data-share>Поделиться</button>
+        {t('show.yandex') && <a href={settings.links.yandexAfisha}>{t('show.yandex')}</a>}
+        {t('show.share') && <button type="button" class="share" data-share>{t('show.share')}</button>}
       </div>
     </div>
   </section>
@@ -117,15 +118,15 @@ const desc = d.seoDescription ?? `${d.title} — ${p.longWithWeekday}, ${p.time}
     <section class="container block">
       <div class="card signup">
         <div>
-          <h2 class="display h3">Хочешь выступить?</h2>
-          <p class="lead">Выступить может любой желающий 18+. Запишись у ведущего — он подскажет, сколько минут на выступление и когда прийти.</p>
+          <h2 class="display h3">{t('show.micTitle')}</h2>
+          {t('show.micText') && <p class="lead pre">{t('show.micText')}</p>}
           {signup.hostName && (
-            <p class="host">Ведущий: {signup.hostId ? <a href={`/comics/${signup.hostId}/`}>{signup.hostName}</a> : signup.hostName}</p>
+            <p class="host">{t('show.micHost')} {signup.hostId ? <a href={`/comics/${signup.hostId}/`}>{signup.hostName}</a> : signup.hostName}</p>
           )}
         </div>
         <div class="signup-a">
-          <a class="btn btn-primary btn-lg" href={signup.url}>Записаться у ведущего</a>
-          <a class="btn btn-outline btn-lg" href="/open-mic/">Правила open mic</a>
+          <a class="btn btn-primary btn-lg" href={signup.url}>{t('show.micSignup')}</a>
+          {t('show.micRules') && <a class="btn btn-outline btn-lg" href="/open-mic/">{t('show.micRules')}</a>}
         </div>
       </div>
     </section>
@@ -133,32 +134,32 @@ const desc = d.seoDescription ?? `${d.title} — ${p.longWithWeekday}, ${p.time}
 
   <section class="container two">
     <div>
-      <h2 class="display h3">О шоу</h2>
+      <h2 class="display h3">{t('show.about')}</h2>
       <div class="prose">{about.map((p) => <p>{p}</p>)}</div>
     </div>
     <div>
-      <h2 class="display h3">Важно знать</h2>
+      <h2 class="display h3">{t('show.important')}</h2>
       <ol class="important">
-        {important.map((t) => <li>{t}</li>)}
+        {important.map((x) => <li>{x}</li>)}
       </ol>
     </div>
   </section>
 
   {comics.length > 0 && (
     <section class="container block">
-      <h2 class="display h3">Выступают</h2>
+      <h2 class="display h3">{t('show.cast')}</h2>
       <div class="comics">{comics.map((c) => <ComicCard comic={c!} size="s" />)}</div>
     </section>
   )}
 
   <section class="container block">
-    <h2 class="display h3">Как добраться</h2>
+    <h2 class="display h3">{t('show.howToGet')}</h2>
     <MapBlock />
   </section>
 
   {others.length > 0 && (
     <section class="container block last">
-      <h2 class="display h3">Ещё в афише</h2>
+      <h2 class="display h3">{t('show.moreShows')}</h2>
       <div class="others">
         {others.map((o) => {
           const op = dateParts(parseLocal(o.data.start));
@@ -166,7 +167,7 @@ const desc = d.seoDescription ?? `${d.title} — ${p.longWithWeekday}, ${p.time}
             <a class="card other" href={eventUrl(o)}>
               <div class="display ot">{op.day} {op.month} · {op.time}</div>
               <div class="on">{o.data.title}</div>
-              <div class="muted">{o.data.priceFrom ? `от ${o.data.priceFrom.toLocaleString('ru-RU')} ₽` : FORMAT_LABEL[o.data.format]}{o.data.seats === 'few' ? ' · мало мест' : o.data.seats === 'out' ? ' · sold out' : ''}</div>
+              <div class="muted">{o.data.priceFrom ? `от ${o.data.priceFrom.toLocaleString('ru-RU')} ₽` : FORMAT_LABEL[o.data.format]}{o.data.seats === 'few' ? ` · ${t('tag.few').toLowerCase()}` : o.data.seats === 'out' ? ` · ${t('row.soldOut').toLowerCase()}` : ''}</div>
             </a>
           );
         })}
@@ -175,7 +176,7 @@ const desc = d.seoDescription ?? `${d.title} — ${p.longWithWeekday}, ${p.time}
   )}
 
   {!cancelled && !soldOut && d.ticketUrl && (
-    <NextShowBar slot="after" event={event} label="Купить билет" />
+    <NextShowBar slot="after" event={event} label={t('show.buy')} />
   )}
 </Base>
 

@@ -150,6 +150,14 @@ test('фон: CSS сайта совпадает с shared/themes.ts, чужое 
   assert.equal((await putSettings((s) => { s.background = 'url(javascript:alert(1))'; })).status, 422);
 });
 
+test('тексты сайта: только известные надписи, с ограничением длины', async () => {
+  assert.equal((await putSettings((s) => { s.copy = { 'no.such.key': 'x' }; })).status, 422);
+  assert.equal((await putSettings((s) => { s.copy = { 'nav.openmic': 'x'.repeat(31) }; })).status, 422);
+  assert.equal((await putSettings((s) => { s.copy = { 'nav.openmic': 'a\nb' }; })).status, 422, 'однострочное поле без переводов строки');
+  const ok = await putSettings((s) => { s.copy = { 'nav.openmic': 'Микрофон', 'om.title': 'Хочешь\nна сцену?' }; });
+  assert.equal(ok.status, 200, String(ok.body));
+});
+
 // ---------- open mic: ведущий; страница «Мероприятия» ----------
 
 test('open mic: ведущий должен быть из списка комиков, ссылка — только Telegram/VK', async () => {
