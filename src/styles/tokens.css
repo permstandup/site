@@ -6,6 +6,7 @@
   --c-surface-2: #1e3439;
   --c-tile: #1a2d31;
   --c-footer: #0a1416;
+  --c-bar-rgb: 10, 20, 22;
   --c-text: #f4f1ea;
   --c-text-2: #d5dad8;
   --c-muted: #a9b4b3;
@@ -40,3 +41,9 @@
 :root[data-theme='coral'] { --c-accent: #ff7a6b; --c-accent-hover: #ff9d91; --c-on-accent: #2a0e0a; --c-glow-rgb: 255, 110, 90; }
 :root[data-theme='mint'] { --c-accent: #4fd1a5; --c-accent-hover: #7fe0bf; --c-on-accent: #06231a; --c-glow-rgb: 60, 200, 150; }
 :root[data-theme='sky'] { --c-accent: #5fb4ff; --c-accent-hover: #8ccbff; --c-on-accent: #08203a; --c-glow-rgb: 70, 150, 255; }
+
+/* Цвет фона (Настройки → Внешний вид). Значения совпадают с shared/themes.ts → BG_VALUES. */
+:root[data-bg='graphite'] { --c-bg: #141416; --c-surface: #1d1d21; --c-surface-2: #28282e; --c-tile: #222227; --c-footer: #0d0d0f; --c-bar-rgb: 13, 13, 15; }
+:root[data-bg='navy'] { --c-bg: #0d1424; --c-surface: #151e33; --c-surface-2: #1e2a44; --c-tile: #19233b; --c-footer: #090e1a; --c-bar-rgb: 9, 14, 26; }
+:root[data-bg='wine'] { --c-bg: #1c0f14; --c-surface: #2a161d; --c-surface-2: #3a1f28; --c-tile: #321b23; --c-footer: #130a0e; --c-bar-rgb: 19, 10, 14; }
+:root[data-bg='black'] { --c-bg: #0a0a0a; --c-surface: #151515; --c-surface-2: #202020; --c-tile: #1a1a1a; --c-footer: #050505; --c-bar-rgb: 5, 5, 5; }

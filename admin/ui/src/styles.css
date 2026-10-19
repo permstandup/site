@@ -206,6 +206,7 @@ dialog.confirm .row { justify-content: flex-end; }
 .theme-prev { height: 64px; border-radius: 8px; background: #0e1a1c; display: flex; align-items: flex-end; gap: 6px; padding: 10px; }
 .theme-prev .b { height: 22px; width: 56px; border-radius: 999px; }
 .theme-prev .t { height: 8px; width: 40px; border-radius: 4px; }
+.theme-prev .card-mini { height: 34px; width: 46px; border-radius: 6px; }
 .blocks { display: flex; flex-direction: column; gap: 8px; }
 .block-row { display: flex; gap: 10px; align-items: center; border: 1px solid var(--line-2); border-radius: var(--r-s); padding: 8px 10px; }
 .block-row .name { width: 150px; flex: none; font-weight: 600; }

@@ -7,7 +7,7 @@ import { Resvg } from '@resvg/resvg-js';
 import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { settings } from './settings';
-import { THEME_VALUES } from '../../shared/themes';
+import { THEME_VALUES, BG_VALUES } from '../../shared/themes';
 import logoSvg from '../assets/logo.svg?raw';
 
 const require = createRequire(import.meta.url);
@@ -51,7 +51,7 @@ export async function renderOg({ kicker, title, cta }: OgInput): Promise<Buffer>
   const tree = h('div', {
     width: 1200, height: 630, display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
     padding: '64px 72px', color: '#F4F1EA', fontFamily: GOLOS,
-    backgroundColor: '#0E1A1C',
+    backgroundColor: BG_VALUES[settings.background].bg,
     backgroundImage: `radial-gradient(ellipse 620px 520px at 88% 0%, rgba(${THEME.glowRgb},0.42), rgba(14,26,28,0) 70%)`,
   }, [
     h('div', { display: 'flex', justifyContent: 'space-between', alignItems: 'center' }, [

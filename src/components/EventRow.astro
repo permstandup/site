@@ -31,7 +31,7 @@ const meta = [p.time, FORMAT_LABEL[d.format], d.age, d.priceFrom ? `от ${d.pri
   <div class="info">
     <h3 class="title">
       <a href={eventUrl(event)}>{d.title}</a>
-      {top && <span class="tag tag-top">{settings.home.featuredLabel || 'Топ-шоу'}</span>}
+      {top && <span class="tag tag-top">{settings.home.featuredLabel || 'Главное мероприятие'}</span>}
       {moved && movedFrom && <span class="tag tag-moved">Перенесено с {movedFrom.day} {movedFrom.month}</span>}
       {cancelled && <span class="tag tag-cancel">Отменено</span>}
       {!cancelled && d.seats === 'few' && <span class="tag tag-few">Мало мест</span>}

@@ -134,6 +134,8 @@ export const videosSchema = z.array(videoItemSchema).max(50)
 
 /** Цветовые темы — только из готового списка (значения цветов — в shared/themes.ts) */
 export const THEMES = ['violet', 'coral', 'mint', 'sky'] as const;
+/** Цвет фона — тоже только из готового списка (значения — в shared/themes.ts) */
+export const BACKGROUNDS = ['teal', 'graphite', 'navy', 'wine', 'black'] as const;
 
 /** Блоки главной страницы, которые можно переставлять. Первый экран (шапка с ближайшим шоу) всегда сверху. */
 export const HOME_BLOCKS = ['afisha', 'facts', 'comics', 'video', 'photos', 'openmic'] as const;
@@ -147,7 +149,7 @@ const seoPage = z.object({ title: line(70).default(''), description: line(200).d
 export const homeSchema = z.object({
   /** Топ-шоу: id шоу, которое выделяется на главной. Пусто — нет. После даты шоу выделение пропадает само. */
   featured: z.union([z.literal(''), slug]).default(''),
-  featuredLabel: line(40).default('Главное шоу недели'),
+  featuredLabel: line(40).default('Главное мероприятие'),
   featuredText: line(200).default(''),
   blocks: z.array(z.object({ id: z.enum(HOME_BLOCKS), title: line(60).default('') }).strict()).max(HOME_BLOCKS.length)
     .refine((a) => new Set(a.map((b) => b.id)).size === a.length, 'Блок повторяется')
@@ -231,7 +233,8 @@ export const settingsSchema = z.object({
   /** Страница «Мероприятия»: аренда зала под свои события */
   venue: venueSchema.default(DEFAULT_VENUE),
   theme: z.enum(THEMES).default('violet'),
-  home: homeSchema.default({ featured: '', featuredLabel: 'Главное шоу недели', featuredText: '', blocks: DEFAULT_HOME_BLOCKS }),
+  background: z.enum(BACKGROUNDS).default('teal'),
+  home: homeSchema.default({ featured: '', featuredLabel: 'Главное мероприятие', featuredText: '', blocks: DEFAULT_HOME_BLOCKS }),
   banner: bannerSchema.default({ enabled: false, text: '', link: '', linkLabel: '', until: '', tone: 'accent' }),
   seo: seoSchema.default({ yandexVerification: '', metrikaId: '', pages: { home: { title: '', description: '' }, afisha: { title: '', description: '' }, comics: { title: '', description: '' }, openmic: { title: '', description: '' }, contacts: { title: '', description: '' } } }),
 }).strict();

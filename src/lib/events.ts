@@ -1,6 +1,6 @@
 import { getCollection, getEntries, getEntry, type CollectionEntry } from 'astro:content';
 import { settings } from './settings';
-import { parseLocal, weekKey } from './dates';
+import { parseLocal, weekKey, TZ } from './dates';
 
 export type EventEntry = CollectionEntry<'events'>;
 
@@ -42,7 +42,7 @@ export function groupByWeek(events: EventEntry[], now = new Date()) {
   }
   return [...groups.entries()].map(([k, list]) => ({
     key: k,
-    name: k === thisWeek ? 'Эта неделя' : k === nextWeek ? 'Следующая неделя' : `Неделя с ${new Date(k).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', timeZone: 'UTC' })}`,
+    name: [k === thisWeek ? 'Эта неделя' : k === nextWeek ? 'Следующая неделя' : '', dateRange(list.map((e) => parseLocal(e.data.start)))].filter(Boolean).join(' · '),
     events: list,
   }));
 }
@@ -72,4 +72,19 @@ export async function openMicSignup(e: EventEntry) {
 export async function nextOpenMicSignup(upcoming: EventEntry[]) {
   const next = upcoming.find((e) => e.data.format === 'openmic' && e.data.status !== 'cancelled');
   return next ? openMicSignup(next) : { hostName: undefined, hostId: undefined, url: settings.links.openMicHost || settings.links.telegram };
+}
+
+const dayNum = new Intl.DateTimeFormat('ru-RU', { timeZone: TZ, day: 'numeric' });
+const dayMonth = new Intl.DateTimeFormat('ru-RU', { timeZone: TZ, day: 'numeric', month: 'long' });
+const monthOnly = (d: Date) => dayMonth.format(d).replace(/^\d+\s/, '');
+
+/** Даты шоу недели: «20 — 25 октября», «27 октября — 1 ноября», «23 октября» */
+export function dateRange(dates: Date[]): string {
+  if (!dates.length) return '';
+  const from = dates.reduce((a, b) => (a < b ? a : b));
+  const to = dates.reduce((a, b) => (a > b ? a : b));
+  if (dayMonth.format(from) === dayMonth.format(to)) return dayMonth.format(from);
+  return monthOnly(from) === monthOnly(to)
+    ? `${dayNum.format(from)} — ${dayMonth.format(to)}`
+    : `${dayMonth.format(from)} — ${dayMonth.format(to)}`;
 }

@@ -64,7 +64,7 @@ function row(app: App, e: Entry<EventData>) {
   return h('div', { class: 'row' },
     h('div', { class: 'r-date' }, h('div', { class: 'strong' }, f.date), h('div', { class: 'muted small' }, f.time)),
     h('a', { class: 'r-title strong', href: `#/shows/${e.id}` }, d.title,
-      app.content.settings.data.home?.featured === e.id ? h('span', { class: 'pill top', title: 'Главное шоу недели' }, ' ★ Топ') : null),
+      app.content.settings.data.home?.featured === e.id ? h('span', { class: 'pill top', title: 'Главное мероприятие' }, ' ★ Топ') : null),
     h('div', { class: 'r-cast muted small' }, castLine(app, d.comedians)),
     h('div', { class: 'r-price' }, d.priceFrom ? `от ${d.priceFrom.toLocaleString('ru-RU')} ₽` : '—'),
     h('div', { class: 'r-seats' }, status),

@@ -1,4 +1,5 @@
 ---
+import { BG_VALUES } from '../../shared/themes';
 import '@fontsource/oswald/500.css';
 import '@fontsource/oswald/600.css';
 import '@fontsource/oswald/700.css';
@@ -29,7 +30,7 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
 const og = new URL(ogImage ?? '/og/default.png', Astro.site).toString();
 ---
 <!doctype html>
-<html lang="ru" data-theme={settings.theme}>
+<html lang="ru" data-theme={settings.theme} data-bg={settings.background}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -37,7 +38,7 @@ const og = new URL(ogImage ?? '/og/default.png', Astro.site).toString();
     <meta name="description" content={desc} />
     <link rel="canonical" href={canonical} />
     {noindex && <meta name="robots" content="noindex" />}
-    <meta name="theme-color" content="#0e1a1c" />
+    <meta name="theme-color" content={BG_VALUES[settings.background].bg} />
     {settings.seo.yandexVerification && <meta name="yandex-verification" content={settings.seo.yandexVerification} />}
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png" />

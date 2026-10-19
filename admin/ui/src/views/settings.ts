@@ -3,7 +3,7 @@ import type { App } from '../main';
 import { api, imageUrl } from '../api';
 import { prepareImage } from '../image';
 import { HOME_BLOCKS, type Settings } from '../../../../shared/schema';
-import { THEME_VALUES } from '../../../../shared/themes';
+import { THEME_VALUES, BG_VALUES } from '../../../../shared/themes';
 import { isPast } from './shows';
 import { busy, card, confirmBox, field, fmtShort, markClean, markDirty, segmented, showError, stringList, textArea, textInput, toast, toggle } from '../ui';
 import { historyCard } from './history';
@@ -85,12 +85,25 @@ export function settingsView(app: App, logout: () => void) {
   const renderThemes = () => setChildren(themesBox, ...(Object.keys(THEME_VALUES) as Array<keyof typeof THEME_VALUES>).map((k) => {
     const t = THEME_VALUES[k];
     const prev = h('span', { class: 'theme-prev' }, h('span', { class: 'b' }), h('span', { class: 't' }));
+    prev.style.background = BG_VALUES[s.background].bg;
     (prev.querySelector('.b') as HTMLElement).style.background = t.accent;
     (prev.querySelector('.t') as HTMLElement).style.background = t.hover;
-    return h('button', { type: 'button', class: 'theme-opt', role: 'radio', 'aria-checked': String(s.theme === k), onclick: () => { s.theme = k; markDirty(); renderThemes(); renderBannerPrev(); } },
+    return h('button', { type: 'button', class: 'theme-opt', role: 'radio', 'aria-checked': String(s.theme === k), onclick: () => { s.theme = k; markDirty(); renderThemes(); renderBgs(); renderBannerPrev(); } },
       prev, h('span', { class: 'strong' }, t.label));
   }));
   renderThemes();
+  const bgBox = h('div', { class: 'themes', role: 'radiogroup', 'aria-label': 'Цвет фона' });
+  const renderBgs = () => setChildren(bgBox, ...(Object.keys(BG_VALUES) as Array<keyof typeof BG_VALUES>).map((k) => {
+    const b = BG_VALUES[k];
+    const th = THEME_VALUES[s.theme];
+    const prev = h('span', { class: 'theme-prev' }, h('span', { class: 'card-mini' }), h('span', { class: 'b' }));
+    prev.style.background = b.bg;
+    (prev.querySelector('.card-mini') as HTMLElement).style.background = b.surface2;
+    (prev.querySelector('.b') as HTMLElement).style.background = th.accent;
+    return h('button', { type: 'button', class: 'theme-opt', role: 'radio', 'aria-checked': String(s.background === k), onclick: () => { s.background = k; markDirty(); renderBgs(); renderThemes(); } },
+      prev, h('span', { class: 'strong' }, b.label));
+  }));
+  renderBgs();
 
   // ----- плашка -----
   const bannerPrev = h('div', { class: 'banner-prev' });
@@ -154,10 +167,10 @@ export function settingsView(app: App, logout: () => void) {
         SECTIONS.map(([k, name, hint]) => toggle(s.sections[k], (v) => { s.sections[k] = v; }, name, (v) => v ? hint : 'Выключен — на сайте не виден')))),
     card('Главная страница',
       h('div', { class: 'featured-box' },
-        field('Главное шоу недели', featSel, { hint: 'Выделяется крупно на первом экране и меткой в афише. После даты шоу выделение пропадёт само.' }),
+        field('Главное мероприятие', featSel, { hint: 'Выделяется крупно на первом экране и меткой в афише. После даты шоу выделение пропадёт само.' }),
         featuredGone ? h('p', { class: 'small' }, 'Выбранное раньше шоу уже прошло или отменено — на сайте показывается ближайшее.') : null,
         h('div', { class: 'grid2' },
-          field('Метка', textInput(str(() => s.home.featuredLabel, (v) => { s.home.featuredLabel = v; }), { max: 40, placeholder: 'Главное шоу недели' })),
+          field('Метка', textInput(str(() => s.home.featuredLabel, (v) => { s.home.featuredLabel = v; }), { max: 40, placeholder: 'Главное мероприятие' })),
           field('Короткий текст (необязательно)', textInput(str(() => s.home.featuredText, (v) => { s.home.featuredText = v; }), { max: 200, placeholder: 'Почему стоит прийти' })))),
       h('div', { class: 'field' }, h('span', { class: 'label' }, 'Порядок блоков и заголовки'),
         h('span', { class: 'hint' }, 'Первый экран с ближайшим шоу всегда сверху. Пустой заголовок — стандартный.'), blocksBox)),
@@ -174,8 +187,10 @@ export function settingsView(app: App, logout: () => void) {
         h('label', { class: 'drop', for: 'venue-files' }, icon('upload', 24), h('span', { class: 'strong' }, 'Добавить фото'), venueStatus),
         venueFiles, venuePhotos)),
     card('Внешний вид',
-      h('p', { class: 'muted small' }, 'Меняется акцентный цвет: кнопки, метки, подсветка. Все темы проверены на читаемость.'),
-      themesBox),
+      h('div', { class: 'field' }, h('span', { class: 'label' }, 'Акцентный цвет'),
+        h('span', { class: 'hint' }, 'Кнопки, метки, подсветка.'), themesBox),
+      h('div', { class: 'field' }, h('span', { class: 'label' }, 'Цвет фона'),
+        h('span', { class: 'hint' }, 'Фон страниц, карточек и подвала. Все варианты тёмные и проверены на читаемость с любым акцентом.'), bgBox)),
     card('Плашка-объявление',
       toggle(s.banner.enabled, (v) => { s.banner.enabled = v; }, 'Показывать плашку над шапкой сайта', (v) => v ? 'Видна на всех страницах' : 'Выключена'),
       bannerPrev,

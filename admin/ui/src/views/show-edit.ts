@@ -153,7 +153,7 @@ export function showEditView(app: App, id: string, query: URLSearchParams, prefi
   untilWrap.hidden = true;
   timeIn.addEventListener('input', renderRepeatInfo);
 
-  // ----- главное шоу недели -----
+  // ----- главное мероприятие -----
   // ----- open mic: ведущий и запись -----
   const hostSel = h('select', null,
     h('option', { value: '', selected: !d.host }, '— не указан —'),
@@ -168,7 +168,7 @@ export function showEditView(app: App, id: string, query: URLSearchParams, prefi
 
   const settingsData = app.content.settings.data;
   const isFeatured = !isNew && settingsData.home.featured === id;
-  const featureBtn = h('button', { type: 'button', class: ['btn', 'btn-block', isFeatured && 'btn-primary-soft'] }, isFeatured ? '★ Главное шоу недели — убрать' : '☆ Сделать главным шоу недели');
+  const featureBtn = h('button', { type: 'button', class: ['btn', 'btn-block', isFeatured && 'btn-primary-soft'] }, isFeatured ? '★ Главное мероприятие — убрать' : '☆ Сделать главным мероприятием');
   featureBtn.addEventListener('click', () => busy(featureBtn, async () => {
     if (isDirty()) { toast('Сначала сохраните изменения шоу', 'err'); return; }
     const next = { ...settingsData, home: { ...settingsData.home, featured: isFeatured ? '' : id } };

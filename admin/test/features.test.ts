@@ -12,7 +12,7 @@ import type { Req } from '../server/http';
 import { LocalRepo } from '../dev/local-repo';
 import { gitBlobSha } from '../server/repo';
 import { checkQticketsUrl, parseQtickets } from '../server/qtickets';
-import { THEME_VALUES } from '../../shared/themes';
+import { THEME_VALUES, BG_VALUES } from '../../shared/themes';
 
 const ORIGIN = 'https://admin.example.test';
 let dir = '';
@@ -139,6 +139,15 @@ test('темы: CSS сайта совпадает с shared/themes.ts', async ()
     const block = new RegExp(`data-theme='${k}'\\][^}]*`).exec(css)?.[0] ?? '';
     for (const v of [t.accent, t.hover, t.onAccent, t.glowRgb]) assert.ok(block.includes(v), `${k}: ${v}`);
   }
+});
+
+test('фон: CSS сайта совпадает с shared/themes.ts, чужое значение не принимается', async () => {
+  const css = await readFile(join(process.cwd(), 'src/styles/tokens.css'), 'utf8');
+  for (const [k, b] of Object.entries(BG_VALUES)) {
+    const block = k === 'teal' ? css.slice(0, css.indexOf('}')) : new RegExp(`data-bg='${k}'\\][^}]*`).exec(css)?.[0] ?? '';
+    for (const v of [b.bg, b.surface, b.surface2, b.tile, b.footer, b.barRgb]) assert.ok(block.includes(v), `${k}: ${v}`);
+  }
+  assert.equal((await putSettings((s) => { s.background = 'url(javascript:alert(1))'; })).status, 422);
 });
 
 // ---------- open mic: ведущий; страница «Мероприятия» ----------

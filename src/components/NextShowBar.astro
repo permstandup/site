@@ -23,7 +23,7 @@ const link = href ?? event?.data.ticketUrl;
     .bar {
       display: flex; align-items: center; gap: 12px; position: fixed; left: 0; right: 0; bottom: 0; z-index: 15;
       padding: 12px var(--gutter) calc(14px + env(safe-area-inset-bottom));
-      background: rgba(10, 20, 22, .96); border-top: 1px solid var(--c-line);
+      background: rgba(var(--c-bar-rgb), .96); border-top: 1px solid var(--c-line);
     }
     .txt { flex: 1; min-width: 0; line-height: 1.3; }
     .t { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

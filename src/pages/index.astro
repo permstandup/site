@@ -14,7 +14,7 @@ import { HOME_BLOCKS } from '../../shared/schema';
 const upcoming = await getUpcomingEvents();
 const openMicContact = (await nextOpenMicSignup(upcoming)).url;
 const home = settings.home;
-/** Топ-шоу недели (выбирается в админке). Отменённое или прошедшее — не показывается. */
+/** Главное шоу (выбирается в админке). Отменённое или прошедшее — не показывается. */
 const featured = home.featured ? upcoming.find((e) => e.id === home.featured && e.data.status !== 'cancelled') : undefined;
 const next = featured ?? nextOnSale(upcoming);
 const nextP = next ? dateParts(parseLocal(next.data.start)) : undefined;
@@ -68,7 +68,7 @@ const jsonLd = {
             </a>
           )}
           <div class="next-body">
-          <div class="eyebrow">{featured ? (home.featuredLabel || 'Главное шоу недели') : 'Ближайшее шоу'}</div>
+          <div class="eyebrow">{featured ? (home.featuredLabel || 'Главное мероприятие') : 'Ближайшее шоу'}</div>
           <a class="display next-title" href={eventUrl(next)}>{next.data.title}</a>
           {featured && home.featuredText && <p class="next-text">{home.featuredText}</p>}
           <dl class="facts">
