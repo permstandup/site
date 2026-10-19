@@ -108,7 +108,6 @@ const desc = d.seoDescription ?? `${d.title} — ${p.longWithWeekday}, ${p.time}
       )}
       <div class="links">
         <a href={settings.links.yandexAfisha}>Также в Яндекс Афише</a>
-        {!cancelled && <a href={`${eventUrl(event)}event.ics`} download>Добавить в календарь</a>}
         <button type="button" class="share" data-share>Поделиться</button>
       </div>
     </div>
