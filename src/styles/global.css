@@ -99,9 +99,37 @@ p { margin: 0; }
   clip: rect(0 0 0 0); white-space: nowrap;
 }
 
+/* ---------- Анимации: мягкие и короткие. При «уменьшить движение» в системе — отключены. ---------- */
+
+/* Переходы между страницами (браузер делает сам; где не умеет — обычный переход) */
+@view-transition { navigation: auto; }
+::view-transition-old(root) { animation: vt-out .18s ease-in both; }
+::view-transition-new(root) { animation: vt-in .28s cubic-bezier(.2, .7, .2, 1) both; }
+::view-transition-group(poster) { animation-duration: .38s; animation-timing-function: cubic-bezier(.2, .7, .2, 1); }
+.site-header { view-transition-name: site-header; }
+@keyframes vt-out { to { opacity: 0; } }
+@keyframes vt-in { from { opacity: 0; transform: translateY(8px); } }
+
+/* Появление блоков при прокрутке (класс ставит скрипт; без скрипта всё видно сразу) */
+.reveal-on .reveal { opacity: 0; transform: translateY(18px); transition: opacity .6s ease, transform .6s cubic-bezier(.2, .7, .2, 1); }
+.reveal-on .reveal.in { opacity: 1; transform: none; }
+
+/* Наведение */
+.btn { transition: background-color .15s, border-color .15s, color .15s, transform .15s; }
+.btn:active { transform: translateY(1px); }
+.ph img, .poster img { transition: transform .4s cubic-bezier(.2, .7, .2, 1); }
+a:hover > .ph img, a.poster:hover img { transform: scale(1.03); }
+.card { transition: border-color .2s, transform .2s, background-color .2s; }
+a.card:hover { transform: translateY(-3px); }
+
+@keyframes fade-up { from { opacity: 0; transform: translateY(6px); } }
+@keyframes fade { from { opacity: 0; } }
+
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
-  * { transition: none !important; }
+  *, *::before, *::after { transition: none !important; animation: none !important; }
+  @view-transition { navigation: none; }
+  .reveal-on .reveal { opacity: 1; transform: none; }
 }
 
 /* Афиша шоу (обложка): квадрат, картинка вписывается целиком, без обрезки */

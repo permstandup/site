@@ -86,7 +86,7 @@ const desc = d.seoDescription ?? `${d.title} — ${p.longWithWeekday}, ${p.time}
   )}
 
   <section class="container top">
-    <div class:list={['poster', 'cover', { dim: cancelled }]}>
+    <div class:list={['poster', 'cover', { dim: cancelled }]} id="vt-poster" data-vt-poster={eventUrl(event)}>
       {d.cover ? <img src={d.cover} alt={`Афиша шоу «${d.title}»`} /> : <div class="poster-empty"><img src="/logo.svg" alt="" /></div>}
     </div>
     <div class="side">

@@ -71,7 +71,7 @@ const jsonLd = {
       {next && nextP ? (
         <div class:list={['card', 'next', { featured }]}>
           {featured && (
-            <a class="poster next-poster" href={eventUrl(next)} aria-label={`Подробнее: ${next.data.title}`}>
+            <a class="poster next-poster" id="vt-poster" data-vt-poster={eventUrl(next)} href={eventUrl(next)} aria-label={`Подробнее: ${next.data.title}`}>
               {next.data.cover ? <img src={next.data.cover} alt={`Афиша шоу «${next.data.title}»`} /> : <span class="poster-empty"><img src="/logo.svg" alt="" />Обложка появится позже</span>}
             </a>
           )}

@@ -62,6 +62,13 @@ const items = navItems();
       background: radial-gradient(ellipse 320px 300px at 100% 100%, var(--c-glow), transparent 70%), var(--c-bg);
       padding: 88px var(--gutter) 28px; display: flex; flex-direction: column; gap: 24px;
     }
+    .nav-mobile[open] .sheet { animation: fade .2s ease-out; }
+    .nav-mobile[open] .sheet nav a { animation: fade-up .35s cubic-bezier(.2, .7, .2, 1) both; }
+    .nav-mobile[open] .sheet nav a:nth-child(2) { animation-delay: .03s; }
+    .nav-mobile[open] .sheet nav a:nth-child(3) { animation-delay: .06s; }
+    .nav-mobile[open] .sheet nav a:nth-child(4) { animation-delay: .09s; }
+    .nav-mobile[open] .sheet nav a:nth-child(5) { animation-delay: .12s; }
+    .nav-mobile[open] .sheet nav a:nth-child(6) { animation-delay: .15s; }
     .sheet nav { display: flex; flex-direction: column; }
     .sheet nav a {
       font-family: var(--f-display); font-size: 40px; font-weight: 600; text-transform: uppercase;

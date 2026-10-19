@@ -151,6 +151,9 @@ const faqLd = {
   .faq details { padding: 18px 20px; border-radius: 14px; }
   .faq summary { font-weight: 600; cursor: pointer; min-height: 24px; }
   .faq p { margin-top: 10px; color: var(--c-text-2); }
+  .faq details[open] p { animation: fade-up .25s ease-out; }
+  .faq summary { transition: color .15s; }
+  .faq summary:hover { color: var(--c-accent-hover); }
   .rows { border-top: 1px solid var(--c-line); }
 
   .last { padding-bottom: 96px; }

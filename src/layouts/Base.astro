@@ -54,6 +54,8 @@ const og = new URL(ogImage ?? '/og/default.png', Astro.site).toString();
     <meta property="og:image:height" content="630" />
     <meta name="twitter:card" content="summary_large_image" />
     {jsonLd && <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />}
+    <script is:inline src="/vt.js"></script>
+    <link rel="expect" href="#vt-poster" blocking="render" />
   </head>
   <body>
     <a class="skip-link" href="#main">К содержимому</a>
@@ -65,5 +67,20 @@ const og = new URL(ogImage ?? '/og/default.png', Astro.site).toString();
     <Footer />
     <slot name="after" />
     <Metrika />
-  </body>
+    <script>
+    // Блоки ниже первого экрана мягко проявляются при прокрутке (один раз)
+    if (!matchMedia('(prefers-reduced-motion: reduce)').matches && 'IntersectionObserver' in window) {
+      const items = [...document.querySelectorAll<HTMLElement>('main > section, main > div:not(.crumbs)')].slice(1);
+      const io = new IntersectionObserver((entries) => {
+        for (const e of entries) if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
+      }, { rootMargin: '0px 0px -8% 0px' });
+      for (const el of items) {
+        el.classList.add('reveal');
+        if (el.getBoundingClientRect().top < innerHeight) el.classList.add('in');
+        else io.observe(el);
+      }
+      document.documentElement.classList.add('reveal-on');
+    }
+  </script>
+</body>
 </html>
